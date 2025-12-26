@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StorageService } from "../../services/StorageService";
 import { Transaction, TransactionType } from "../../types";
-import { getCategoryIcon } from "../../utils/formatters";
-import { getLucideIcon } from "../../utils/iconUtils";
 import "./TransactionForm.css";
 
 interface TransactionFormProps {

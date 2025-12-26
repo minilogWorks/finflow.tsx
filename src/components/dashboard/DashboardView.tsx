@@ -37,7 +37,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onViewAllTransactions }) 
       .reduce((sum, t) => sum + t.amount, 0);
 
     const netBalance = totalIncome - totalExpense;
-    const user = StorageService.getUser();
     const savingsRate = totalIncome > 0 ? (netBalance / totalIncome) * 100 : 0;
 
     const expenseTransactions = yearlyTransactions.filter((t) => t.type === 'expense');
