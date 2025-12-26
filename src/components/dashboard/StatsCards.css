@@ -1,0 +1,88 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f3f5;
+}
+
+.stat-card.income {
+  border-left: 4px solid #00B894;
+}
+
+.stat-card.expense {
+  border-left: 4px solid #FF6B6B;
+}
+
+.stat-card.balance {
+  border-left: 4px solid #4361ee;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card.income .stat-icon {
+  background: #00B89420;
+  color: #00B894;
+}
+
+.stat-card.expense .stat-icon {
+  background: #FF6B6B20;
+  color: #FF6B6B;
+}
+
+.stat-card.balance .stat-icon {
+  background: #4361ee20;
+  color: #4361ee;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #212529;
+}
+
+.stat-content p {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
