@@ -7,7 +7,7 @@ export interface ReportsViewProps {
   stats: FinancialStats;
 }
 
-const ReportsView: React.FC<ReportsViewProps> = () => {
+const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
   return (
     <div className="reports-view">
       <div className="view-header">

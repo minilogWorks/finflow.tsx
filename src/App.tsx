@@ -83,22 +83,25 @@ function App() {
       if (
         StorageService.updateTransaction(editingTransactionId, transactionData)
       ) {
-        showNotification("Transaction updated successfully!", "success");
+        const action = transactionData.type === "income" ? "Income" : "Expense";
+        showNotification(`${action} updated successfully!`, "success");
       }
     } else {
       const newTransaction: Transaction = {
         id: `trans_${Date.now()}`,
         title: transactionData.title!,
         amount: transactionData.amount!,
-        type: "expense",
+        type: transactionData.type!, // This should be 'income' or 'expense'
         categoryId: transactionData.categoryId!,
         date: transactionData.date!,
         notes: transactionData.notes,
         createdAt: new Date().toISOString(),
       };
+
       StorageService.addTransaction(newTransaction);
+      const action = transactionData.type === "income" ? "Income" : "Expense";
       showNotification(
-        `Expense of ${formatCurrency(
+        `${action} of ${formatCurrency(
           transactionData.amount!
         )} added successfully!`,
         "success"

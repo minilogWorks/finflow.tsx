@@ -1,52 +1,62 @@
-import React, { useState } from 'react';
-import { Info } from 'lucide-react';
-import { FinancialStats, Transaction, TopCategory } from '../../types';
-import { StorageService } from '../../services/StorageService';
-import StatsCards from './StatsCards';
-import RecentTransactions from './RecentTransactions';
-import TopCategories from './TopCategories';
-import SpendingChart from './SpendingChart';
-import './DashboardView.css';
+import React, { useState } from "react";
+import { Info } from "lucide-react";
+import { FinancialStats, Transaction, TopCategory } from "../../types";
+import { StorageService } from "../../services/StorageService";
+import StatsCards from "./StatsCards";
+import RecentTransactions from "./RecentTransactions";
+import TopCategories from "./TopCategories";
+import SpendingChart from "./SpendingChart";
+import "./DashboardView.css";
 
 interface DashboardViewProps {
   onViewAllTransactions: () => void;
 }
 
-const DashboardView: React.FC<DashboardViewProps> = ({ onViewAllTransactions }) => {
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+const DashboardView: React.FC<DashboardViewProps> = ({
+  onViewAllTransactions,
+}) => {
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
 
   // Get transactions for selected year
   const getYearlyTransactions = () => {
     const allTransactions = StorageService.getTransactions();
-    return allTransactions.filter(transaction => {
+    return allTransactions.filter((transaction) => {
       const transactionDate = new Date(transaction.date);
       return transactionDate.getFullYear() === selectedYear;
     });
   };
 
   // Calculate stats for selected year
+  // Calculate stats for selected year - FIXED VERSION
   const calculateYearlyStats = (): FinancialStats => {
-    const yearlyTransactions = getYearlyTransactions();
-    
+    const yearlyTransactions = getYearlyTransactions(); // Get ONLY yearly transactions
+
+    // Now use yearlyTransactions for ALL calculations
     const totalIncome = yearlyTransactions
-      .filter((t) => t.type === 'income')
+      .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const totalExpense = yearlyTransactions
-      .filter((t) => t.type === 'expense')
+      .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const netBalance = totalIncome - totalExpense;
     const savingsRate = totalIncome > 0 ? (netBalance / totalIncome) * 100 : 0;
 
-    const expenseTransactions = yearlyTransactions.filter((t) => t.type === 'expense');
-    const biggestExpense = expenseTransactions.length > 0
-      ? Math.max(...expenseTransactions.map((t) => t.amount))
-      : 0;
+    const expenseTransactions = yearlyTransactions.filter(
+      (t) => t.type === "expense"
+    );
+    const biggestExpense =
+      expenseTransactions.length > 0
+        ? Math.max(...expenseTransactions.map((t) => t.amount))
+        : 0;
 
-    const averageDailySpend = expenseTransactions.length > 0
-      ? totalExpense / expenseTransactions.length
-      : 0;
+    const averageDailySpend =
+      expenseTransactions.length > 0
+        ? totalExpense / expenseTransactions.length
+        : 0;
 
     return {
       totalIncome,
@@ -55,7 +65,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onViewAllTransactions }) 
       savingsRate,
       biggestExpense,
       averageDailySpend,
-      transactionCount: yearlyTransactions.length,
+      transactionCount: yearlyTransactions.length, // This should also use yearlyTransactions
     };
   };
 
@@ -72,8 +82,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onViewAllTransactions }) 
     const yearlyTransactions = getYearlyTransactions();
     const categories = StorageService.getCategories();
 
-    const expenseTransactions = yearlyTransactions.filter((t) => t.type === 'expense');
-    const totalExpense = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const expenseTransactions = yearlyTransactions.filter(
+      (t) => t.type === "expense"
+    );
+    const totalExpense = expenseTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0
+    );
 
     const categoryMap = new Map<string, number>();
     expenseTransactions.forEach((transaction) => {
@@ -110,10 +125,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onViewAllTransactions }) 
           <span className="year-value">{selectedYear}</span>
         </div>
       </div>
-      
+
       {/* Stats Cards moved back to original position */}
       <StatsCards stats={stats} />
-      
+
       <div className="content-grid">
         <SpendingChart onYearChange={setSelectedYear} />
 
