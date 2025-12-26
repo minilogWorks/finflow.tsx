@@ -57,3 +57,55 @@
 .btn-secondary:hover {
   background: #dee2e6;
 }
+
+/* Add these styles to your existing TransactionsView.css */
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.filter-badge {
+  background: #667eea;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-indicator {
+  color: #ff6b6b;
+  font-size: 1.2rem;
+  margin-left: 4px;
+}
+
+.btn-secondary.active-filter {
+  background: #667eea20;
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #f1f3f5;
+}
+
+.empty-state p {
+  color: #6c757d;
+  margin-bottom: 16px;
+}
+
+.empty-state .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}

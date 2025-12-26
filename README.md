@@ -28,3 +28,9 @@ A modern, responsive expense tracking application built with React, TypeScript, 
    npm install
 
    npx tsc --noEmit
+
+
+
+   C:\Users\YourName\AppData\Local\Google\Chrome\User Data\Default\Local Storage\
+├── http_finflow.local_0.localstorage
+│   └── finflow_transactions_v1 = "[{...your data...}]"
