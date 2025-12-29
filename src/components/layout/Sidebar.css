@@ -64,7 +64,7 @@
   color: #212529;
 }
 
-.sidebar-nav li.active .sidebar-button {
+.sidebar-nav .active .sidebar-button {
   background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
   color: #4361ee;
   font-weight: 500;

@@ -4,10 +4,9 @@ import { Transaction, Category } from "../../types";
 import TransactionTable from "./TransactionTable";
 import FilterModal from "./FilterModal";
 import "./TransactionsView.css";
+import { StorageService } from "../../services/StorageService";
 
 interface TransactionsViewProps {
-  transactions: Transaction[];
-  categories: Category[];
   onAddTransaction: () => void;
   onEditTransaction: (id: string) => void;
   onDeleteTransaction: (id: string) => void;
@@ -22,8 +21,6 @@ interface FilterState {
 }
 
 const TransactionsView: React.FC<TransactionsViewProps> = ({
-  transactions,
-  categories,
   onAddTransaction,
   onEditTransaction,
   onDeleteTransaction,
@@ -44,6 +41,9 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({
   const handleApplyFilters = (newFilters: FilterState) => {
     setFilters(newFilters);
   };
+
+  const transactions = StorageService.getTransactions();
+  const categories = StorageService.getCategories();
 
   // Simple filter function - no complex code
   const filteredTransactions = transactions.filter((transaction) => {

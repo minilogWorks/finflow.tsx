@@ -2,6 +2,7 @@ import React from "react";
 import { Home, History, Tags, BarChart, PieChart, User } from "lucide-react";
 import { AppView } from "../../types";
 import "./Sidebar.css";
+import { NavLink } from "react-router";
 
 interface SidebarProps {
   currentView: AppView;
@@ -13,23 +14,28 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-  currentView,
-  onViewChange,
   transactionCount,
   categoryCount,
   user,
   isMobile,
 }) => {
   const menuItems = [
-    { id: "dashboard", icon: Home, label: "Dashboard" },
+    { id: "dashboard", icon: Home, label: "Dashboard", path: "/" },
     {
       id: "transactions",
       icon: History,
       label: "Transactions",
       badge: transactionCount,
+      path: "/transactions",
     },
-    { id: "categories", icon: Tags, label: "Categories", badge: categoryCount },
-    { id: "reports", icon: BarChart, label: "Reports" },
+    {
+      id: "categories",
+      icon: Tags,
+      label: "Categories",
+      badge: categoryCount,
+      path: "/categories",
+    },
+    { id: "reports", icon: BarChart, label: "Reports", path: "/reports" },
   ];
 
   return (
@@ -46,20 +52,19 @@ const Sidebar: React.FC<SidebarProps> = ({
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
-              <li
-                key={item.id}
-                className={currentView === item.id ? "active" : ""}
-              >
-                <button
-                  className="sidebar-button"
-                  onClick={() => onViewChange(item.id as AppView)}
+              <li key={item.id}>
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) => (isActive ? "active" : "")}
                 >
-                  <Icon size={20} />
-                  <span>{item.label}</span>
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <span className="badge">{item.badge}</span>
-                  )}
-                </button>
+                  <button className="sidebar-button">
+                    <Icon size={20} />
+                    <span>{item.label}</span>
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span className="badge">{item.badge}</span>
+                    )}
+                  </button>
+                </NavLink>
               </li>
             );
           })}

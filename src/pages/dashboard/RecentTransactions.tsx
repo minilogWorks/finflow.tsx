@@ -6,15 +6,14 @@ import { formatCurrency, formatDate } from "../../utils/formatters";
 import { getCategoryIcon, getCategoryColor } from "../../utils/formatters";
 import { getLucideIcon } from "../../utils/iconUtils";
 import "./RecentTransactions.css";
+import { Link } from "react-router";
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
-  onViewAll: () => void;
 }
 
 const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   transactions,
-  onViewAll,
 }) => {
   const renderTransactionItem = (transaction: Transaction) => {
     const category = StorageService.getCategoryById(transaction.categoryId);
@@ -45,9 +44,11 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
     <div className="card">
       <div className="card-header">
         <h3>Recent Transactions</h3>
-        <button className="view-all-button" onClick={onViewAll}>
-          View All <ChevronRight size={16} />
-        </button>
+        <Link to="/transactions">
+          <button className="view-all-button">
+            View All <ChevronRight size={16} />
+          </button>
+        </Link>
       </div>
       <div className="transactions-list">
         {transactions.length > 0 ? (

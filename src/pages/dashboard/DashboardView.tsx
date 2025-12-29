@@ -8,13 +8,9 @@ import TopCategories from "./TopCategories";
 import SpendingChart from "./SpendingChart";
 import "./DashboardView.css";
 
-interface DashboardViewProps {
-  onViewAllTransactions: () => void;
-}
+interface DashboardViewProps {}
 
-const DashboardView: React.FC<DashboardViewProps> = ({
-  onViewAllTransactions,
-}) => {
+const DashboardView: React.FC<DashboardViewProps> = ({}) => {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
@@ -132,10 +128,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="content-grid">
         <SpendingChart onYearChange={setSelectedYear} />
 
-        <RecentTransactions
-          transactions={recentTransactions}
-          onViewAll={onViewAllTransactions}
-        />
+        <RecentTransactions transactions={recentTransactions} />
 
         <TopCategories categories={topCategories} />
 
