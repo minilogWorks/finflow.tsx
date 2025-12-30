@@ -19,6 +19,7 @@ import Notification from "./components/shared/Notification";
 import {
   AppView,
   Transaction,
+  Category,
   DashboardViewData,
   TransactionsViewData,
   CategoriesViewData,
@@ -38,9 +39,11 @@ function App() {
     type: "success" | "error" | "info";
   } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     initializeStorage();
+    setCategories(StorageService.getCategories());
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
@@ -139,7 +142,7 @@ function App() {
           categories: StorageService.getCategories(),
         };
       case "categories":
-        return { categories: StorageService.getCategories() };
+        return { categories };
       case "reports":
         return { stats };
       default:
@@ -188,7 +191,13 @@ function App() {
           )}
 
           {currentView === "categories" && (
-            <CategoriesView {...(viewData as CategoriesViewData)} />
+            <CategoriesView
+              {...(viewData as CategoriesViewData)}
+              onCategoriesChange={(updated) => {
+                setCategories(updated);
+                StorageService.saveCategories(updated);
+              }}
+            />
           )}
 
           {currentView === "reports" && (

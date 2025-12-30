@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   CATEGORIES: "finflow_categories_v1",
 };
 
+
 export class StorageService {
   // ========== USER METHODS ==========
   static saveUser(user: User): void {

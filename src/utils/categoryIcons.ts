@@ -1,0 +1,221 @@
+import {
+  ShoppingBag,
+  Home,
+  Car,
+  Utensils,
+  Film,
+  Heart,
+  Briefcase,
+  Gift,
+  GraduationCap,
+  Plane,
+  Coffee,
+  DollarSign,
+  TrendingUp,
+  ShoppingCart,
+  Smartphone,
+  Music,
+  Wifi,
+  Book,
+  Activity,
+  Cloud,
+  // New icons including Lab
+  Beaker,
+  FlaskConical,
+  TestTube,
+  Microscope,
+  Stethoscope,
+  Pill,
+  Brain,
+  Eye,
+  Bone,
+  Thermometer,
+  Zap,
+  Sun,
+  Moon,
+  Star,
+  Globe,
+  CreditCard,
+  Banknote,
+  PiggyBank,
+  Wallet,
+  BarChart,
+  Tv,
+  Gamepad2,
+  Pizza,
+  Wine,
+  Dumbbell,
+  Trees,
+  Leaf,
+  Droplets,
+  Wind,
+  Flame,
+  Mail,
+  Phone,
+  MessageSquare,
+  Users,
+  Calendar,
+  Bell,
+  Settings,
+  Lock,
+  Key,
+  Shield,
+  Camera,
+  Headphones,
+  Printer,
+  Cpu,
+  Server,
+  Truck,
+  Bike,
+  Train,
+  Ship,
+  Navigation,
+  Building2,
+  Factory,
+  Church,
+  School,
+  Scissors,
+  Brush,
+  PenTool,
+  Package,
+  Tag,
+  Clock,
+  Watch,
+  Compass,
+  MapPin,
+  Navigation2,
+  HeartPulse,
+  Smile,
+  Frown,
+  Meh,
+  ThumbsUp,
+} from "lucide-react";
+
+export const categoryIcons = [
+  // Lab & Science Icons
+  { name: "beaker", component: Beaker, label: "Lab" },
+  { name: "flask-conical", component: FlaskConical, label: "Chemistry" },
+  { name: "test-tube", component: TestTube, label: "Test Tube" },
+  { name: "microscope", component: Microscope, label: "Microscope" },
+
+  // Original Icons
+  { name: "shopping-bag", component: ShoppingBag, label: "Shopping" },
+  { name: "home", component: Home, label: "Home" },
+  { name: "car", component: Car, label: "Transport" },
+  { name: "utensils", component: Utensils, label: "Food" },
+  { name: "film", component: Film, label: "Entertainment" },
+  { name: "heart", component: Heart, label: "Health" },
+
+  // Health & Medical
+  { name: "stethoscope", component: Stethoscope, label: "Medical" },
+  { name: "pill", component: Pill, label: "Medicine" },
+  { name: "brain", component: Brain, label: "Mental Health" },
+  { name: "eye", component: Eye, label: "Vision" },
+  { name: "bone", component: Bone, label: "Bone" },
+  { name: "thermometer", component: Thermometer, label: "Temperature" },
+  { name: "heart-pulse", component: HeartPulse, label: "Heart Rate" },
+
+  // Finance & Money
+  { name: "briefcase", component: Briefcase, label: "Work" },
+  { name: "dollar-sign", component: DollarSign, label: "Income" },
+  { name: "trending-up", component: TrendingUp, label: "Investment" },
+  { name: "credit-card", component: CreditCard, label: "Credit Card" },
+  { name: "banknote", component: Banknote, label: "Cash" },
+  { name: "piggy-bank", component: PiggyBank, label: "Savings" },
+  { name: "wallet", component: Wallet, label: "Wallet" },
+  { name: "bar-chart", component: BarChart, label: "Statistics" },
+
+  // Shopping & Retail
+  { name: "gift", component: Gift, label: "Gifts" },
+  { name: "shopping-cart", component: ShoppingCart, label: "Groceries" },
+  { name: "tag", component: Tag, label: "Discount" },
+  { name: "package", component: Package, label: "Package" },
+
+  // Education & Learning
+  { name: "graduation-cap", component: GraduationCap, label: "Education" },
+  { name: "book", component: Book, label: "Books" },
+  { name: "school", component: School, label: "School" },
+
+  // Travel & Transport
+  { name: "plane", component: Plane, label: "Travel" },
+  { name: "train", component: Train, label: "Train" },
+  { name: "bike", component: Bike, label: "Bicycle" },
+  { name: "truck", component: Truck, label: "Truck" },
+  { name: "ship", component: Ship, label: "Ship" },
+  { name: "navigation", component: Navigation, label: "Navigation" },
+
+  // Food & Drink
+  { name: "coffee", component: Coffee, label: "Cafe" },
+  { name: "pizza", component: Pizza, label: "Pizza" },
+  { name: "wine", component: Wine, label: "Wine" },
+
+  // Technology
+  { name: "smartphone", component: Smartphone, label: "Tech" },
+  { name: "cpu", component: Cpu, label: "Computer" },
+  { name: "server", component: Server, label: "Server" },
+  { name: "wifi", component: Wifi, label: "Internet" },
+  { name: "printer", component: Printer, label: "Printer" },
+  { name: "camera", component: Camera, label: "Camera" },
+
+  // Entertainment & Hobbies
+  { name: "music", component: Music, label: "Music" },
+  { name: "tv", component: Tv, label: "TV" },
+  { name: "gamepad-2", component: Gamepad2, label: "Gaming" },
+  { name: "headphones", component: Headphones, label: "Headphones" },
+  { name: "dumbbell", component: Dumbbell, label: "Fitness" },
+
+  // Nature & Environment
+  { name: "tree", component: Trees, label: "Nature" },
+  { name: "leaf", component: Leaf, label: "Leaf" },
+  { name: "droplets", component: Droplets, label: "Water" },
+  { name: "wind", component: Wind, label: "Wind" },
+  { name: "flame", component: Flame, label: "Fire" },
+  { name: "sun", component: Sun, label: "Sun" },
+  { name: "moon", component: Moon, label: "Moon" },
+  { name: "cloud", component: Cloud, label: "Cloud" },
+
+  // Communication
+  { name: "mail", component: Mail, label: "Email" },
+  { name: "phone", component: Phone, label: "Phone" },
+  { name: "message-square", component: MessageSquare, label: "Messages" },
+  { name: "users", component: Users, label: "Users" },
+
+  // Time & Calendar
+  { name: "calendar", component: Calendar, label: "Calendar" },
+  { name: "clock", component: Clock, label: "Clock" },
+  { name: "watch", component: Watch, label: "Watch" },
+
+  // Security
+  { name: "lock", component: Lock, label: "Lock" },
+  { name: "key", component: Key, label: "Key" },
+  { name: "shield", component: Shield, label: "Security" },
+  { name: "bell", component: Bell, label: "Notifications" },
+
+  // Locations
+  { name: "map-pin", component: MapPin, label: "Location" },
+  { name: "compass", component: Compass, label: "Compass" },
+  { name: "navigation-2", component: Navigation2, label: "Direction" },
+  { name: "building-2", component: Building2, label: "Building" },
+  { name: "factory", component: Factory, label: "Factory" },
+  { name: "church", component: Church, label: "Church" },
+
+  // Tools & Utilities
+  { name: "settings", component: Settings, label: "Settings" },
+  { name: "scissors", component: Scissors, label: "Scissors" },
+  { name: "brush", component: Brush, label: "Brush" },
+  { name: "pen-tool", component: PenTool, label: "Pen" },
+
+  // Energy
+  { name: "zap", component: Zap, label: "Electricity" },
+  { name: "battery", component: Activity, label: "Battery" },
+
+  // Space
+  { name: "star", component: Star, label: "Star" },
+  { name: "globe", component: Globe, label: "Globe" },
+
+  // Emotions
+  { name: "smile", component: Smile, label: "Happy" },
+  { name: "frown", component: Frown, label: "Sad" },
+  { name: "meh", component: Meh, label: "Neutral" },
+  { name: "thumbs-up", component: ThumbsUp, label: "Like" },
+];

@@ -15,6 +15,16 @@ export interface Transaction {
   createdAt: string;
 }
 
+export type CategoryType = "expense" | "income";
+
+export interface Category {
+  id: string;
+  name: string;
+  type: CategoryType;
+  color: string;
+  icon: string; // Add this line
+  isCustom: boolean;
+}
 export interface Category {
   id: string;
   name: string;

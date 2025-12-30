@@ -3,23 +3,43 @@ import { Edit, Trash2 } from "lucide-react";
 import { Category } from "../../types";
 import { StorageService } from "../../services/StorageService";
 import { formatCurrency } from "../../utils/formatters";
-import { getCategoryIcon } from "../../utils/formatters";
-import { getLucideIcon } from "../../utils/iconUtils";
+import { categoryIcons } from "../../utils/categoryIcons"; // Import icon list
 import "./CategoryCard.css";
 
 interface CategoryCardProps {
   category: Category;
+  onEdit?: (category: Category) => void;
+  onDelete?: (categoryId: string) => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({
+  category,
+  onEdit,
+  onDelete,
+}) => {
   const transactions = StorageService.getTransactions().filter(
     (t) => t.categoryId === category.id
   );
   const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
   const usageCount = transactions.length;
 
-  const iconName = getCategoryIcon(category.name);
-  const Icon = getLucideIcon(iconName);
+  // Find the icon component based on category.icon
+  const iconConfig =
+    categoryIcons.find((icon) => icon.name === category.icon) ||
+    categoryIcons[0];
+  const IconComponent = iconConfig.component;
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(category);
+    }
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(category.id);
+    }
+  };
 
   return (
     <div className="category-card">
@@ -28,22 +48,22 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           className="category-icon"
           style={{ backgroundColor: category.color }}
         >
-          <Icon size={20} />
+          <IconComponent size={20} /> {/* Use selected icon */}
         </div>
         <div className="category-info">
           <h4>{category.name}</h4>
           <span className={`category-type ${category.type}`}>
-            {category.type}
+            {category.type === "expense" ? "Expense" : "Income"}
           </span>
           {category.isCustom && <span className="custom-badge">Custom</span>}
         </div>
         <div className="category-actions">
           {category.isCustom && (
             <>
-              <button className="btn-icon-small">
+              <button className="btn-icon-small" onClick={handleEdit}>
                 <Edit size={16} />
               </button>
-              <button className="btn-icon-small delete">
+              <button className="btn-icon-small delete" onClick={handleDelete}>
                 <Trash2 size={16} />
               </button>
             </>
@@ -61,8 +81,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           <strong>{formatCurrency(totalSpent)}</strong>
         </div>
       </div>
-
-     
     </div>
   );
 };
