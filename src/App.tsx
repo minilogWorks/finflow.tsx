@@ -1,21 +1,16 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react"; // Add this import
 import { StorageService } from "./services/StorageService";
 import {
   initialCategories,
   sampleUser,
   sampleTransactions,
 } from "./data/sampleData";
-import Sidebar from "./components/layout/Sidebar";
-import Header from "./components/layout/Header";
-import Footer from "./components/layout/Footer";
-import DashboardView from "./components/dashboard/DashboardView";
-import TransactionsView from "./components/transactions/TransactionsView";
-import CategoriesView from "./components/categories/CategoriesView";
-import ReportsView from "./components/reports/ReportsView";
-import Modal from "./components/shared/Modal";
-import TransactionForm from "./components/shared/TransactionForm";
-import Notification from "./components/shared/Notification";
+
+import DashboardView from "./pages/dashboard/DashboardView";
+import TransactionsView from "./pages/transactions/TransactionsView";
+import CategoriesView from "./pages/categories/CategoriesView";
+import ReportsView from "./pages/reports/ReportsView";
+
 import {
   AppView,
   Transaction,
@@ -27,8 +22,14 @@ import {
 } from "./types";
 import { formatCurrency } from "./utils/formatters";
 import "./App.css";
+import { RouterProvider, createBrowserRouter } from "react-router";
+import Home from "./pages/home";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ProtectedRoute from "./components/shared/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
-function App() {
+export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("dashboard");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTransactionId, setEditingTransactionId] = useState<
@@ -156,31 +157,23 @@ function App() {
   };
 
   const viewData = getViewData();
-  const stats = StorageService.calculateStats();
 
-  return (
-    <div className="app-container">
-      <Sidebar
-        currentView={currentView}
-        onViewChange={handleViewChange}
-        transactionCount={StorageService.getTransactions().length}
-        categoryCount={StorageService.getCategories().length}
-        user={StorageService.getUser()}
-        isMobile={isMobile}
-      />
-
-      <div className="main-wrapper">
-        <main className="main-content">
-          <Header currentView={currentView} stats={stats} isMobile={isMobile} />
-
-          {currentView === "dashboard" && (
-            <DashboardView
-              {...(viewData as DashboardViewData)}
-              onViewAllTransactions={() => handleViewChange("transactions")}
-            />
-          )}
-
-          {currentView === "transactions" && (
+  const browserRouter = createBrowserRouter([
+    {
+      path: "/",
+      element: (
+        <ProtectedRoute>
+          <Home />
+        </ProtectedRoute>
+      ),
+      children: [
+        {
+          index: true,
+          element: <DashboardView />,
+        },
+        {
+          path: "transactions",
+          element: (
             <TransactionsView
               {...(viewData as TransactionsViewData)}
               onAddTransaction={() => openTransactionModal()}
@@ -188,57 +181,30 @@ function App() {
               onDeleteTransaction={handleDeleteTransaction}
               isMobile={isMobile}
             />
-          )}
-
-          {currentView === "categories" && (
-            <CategoriesView
-              {...(viewData as CategoriesViewData)}
-              onCategoriesChange={(updated) => {
-                setCategories(updated);
-                StorageService.saveCategories(updated);
-              }}
-            />
-          )}
-
-          {currentView === "reports" && (
-            <ReportsView {...(viewData as ReportsViewData)} />
-          )}
-        </main>
-
-        <Footer />
-      </div>
-
-      <button
-        className="fab"
-        onClick={() => openTransactionModal()}
-        title="Add Transaction"
-      >
-        <Plus size={24} />
-      </button>
-
-      <Modal
-        isOpen={modalOpen}
-        onClose={closeTransactionModal}
-        title={
-          editingTransactionId ? "Edit Transaction" : "Add New Transaction"
-        }
-      >
-        <TransactionForm
-          editingTransactionId={editingTransactionId}
-          onSave={handleSaveTransaction}
-          onCancel={closeTransactionModal}
-        />
-      </Modal>
-
-      {notification && (
-        <Notification
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification(null)}
-        />
-      )}
-    </div>
+          ),
+        },
+        {
+          path: "categories",
+          element: <CategoriesView {...(viewData as CategoriesViewData)} />,
+        },
+        {
+          path: "reports",
+          element: <ReportsView {...(viewData as ReportsViewData)} />,
+        },
+      ],
+    },
+    {
+      path: "/login",
+      element: <Login />,
+    },
+    {
+      path: "/register",
+      element: <Register />,
+    },
+  ]);
+  return (
+    <AuthProvider>
+      <RouterProvider router={browserRouter} />
+    </AuthProvider>
   );
 }
-
-export default App;
