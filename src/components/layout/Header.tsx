@@ -1,11 +1,10 @@
 import React from "react";
 import { formatCurrency } from "../../utils/formatters";
-import { AppView, FinancialStats } from "../../types";
+import { FinancialStats } from "../../types";
 import "./Header.css";
 import { useLocation } from "react-router";
 
 interface HeaderProps {
-  currentView: AppView;
   stats: FinancialStats;
   isMobile: boolean;
 }

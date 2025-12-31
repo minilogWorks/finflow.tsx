@@ -1,42 +1,47 @@
 import React from "react";
-import { Home, History, Tags, BarChart, PieChart, User } from "lucide-react";
-import { AppView } from "../../types";
+import {
+  Home,
+  History,
+  Tags,
+  BarChart,
+  PieChart,
+  User,
+  LogOut,
+} from "lucide-react";
 import "./Sidebar.css";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 
 interface SidebarProps {
-  currentView: AppView;
-  onViewChange: (view: AppView) => void;
-  transactionCount: number;
-  categoryCount: number;
   user: any;
   isMobile: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
-  transactionCount,
-  categoryCount,
-  user,
-  isMobile,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
   const menuItems = [
     { id: "dashboard", icon: Home, label: "Dashboard", path: "/" },
     {
       id: "transactions",
       icon: History,
       label: "Transactions",
-      badge: transactionCount,
       path: "/transactions",
     },
     {
       id: "categories",
       icon: Tags,
       label: "Categories",
-      badge: categoryCount,
       path: "/categories",
     },
     { id: "reports", icon: BarChart, label: "Reports", path: "/reports" },
   ];
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <aside className={`sidebar ${isMobile ? "mobile" : ""}`}>
@@ -60,9 +65,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <button className="sidebar-button">
                     <Icon size={20} />
                     <span>{item.label}</span>
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span className="badge">{item.badge}</span>
-                    )}
                   </button>
                 </NavLink>
               </li>
@@ -81,6 +83,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             <p>{user?.tier || "Free"} User</p>
           </div>
         </div>
+
+        <button className="logout-button" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   );

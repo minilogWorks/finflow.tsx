@@ -40,6 +40,11 @@ export interface User {
   // Removed: monthlyBudget?: number;
 }
 
+export interface Tokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export interface FinancialStats {
   totalIncome: number;
   totalExpense: number;

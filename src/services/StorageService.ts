@@ -4,15 +4,40 @@ import {
   User,
   FinancialStats,
   TopCategory,
+  Tokens,
 } from "../types";
 
 const STORAGE_KEYS = {
   USER: "finflow_user_v1",
   TRANSACTIONS: "finflow_transactions_v1",
   CATEGORIES: "finflow_categories_v1",
+  TOKENS: "finflow_jwt_tokens",
 };
 
 export class StorageService {
+  // ========== TOKEN HANDLERS ==========
+  static saveTokens(tokens: Tokens): void {
+    localStorage.setItem(STORAGE_KEYS.TOKENS, JSON.stringify(tokens));
+  }
+
+  static updateAccessToken(newAccessToken: string): void {
+    const data = localStorage.getItem(STORAGE_KEYS.TOKENS);
+    if (data) {
+      const tokens = JSON.parse(data);
+      tokens.accessToken = newAccessToken;
+      console.log(tokens);
+      localStorage.setItem(STORAGE_KEYS.TOKENS, JSON.stringify(tokens));
+    }
+  }
+
+  static getTokens(): Tokens | null {
+    const tokens = localStorage.getItem(STORAGE_KEYS.TOKENS);
+    return tokens ? JSON.parse(tokens) : null;
+  }
+
+  static deleteTokens() {
+    localStorage.removeItem(STORAGE_KEYS.TOKENS);
+  }
   // ========== USER METHODS ==========
   static saveUser(user: User): void {
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));

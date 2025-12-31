@@ -25,6 +25,8 @@ import { RouterProvider, createBrowserRouter } from "react-router";
 import Home from "./pages/home";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import ProtectedRoute from "./components/shared/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("dashboard");
@@ -156,7 +158,11 @@ export default function App() {
   const browserRouter = createBrowserRouter([
     {
       path: "/",
-      element: <Home />,
+      element: (
+        <ProtectedRoute>
+          <Home />
+        </ProtectedRoute>
+      ),
       children: [
         {
           index: true,
@@ -193,5 +199,9 @@ export default function App() {
       element: <Register />,
     },
   ]);
-  return <RouterProvider router={browserRouter} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={browserRouter} />
+    </AuthProvider>
+  );
 }

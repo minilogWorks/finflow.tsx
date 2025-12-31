@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
+import axios, { AxiosError } from "axios";
+
 import "./Auth.css";
+import { useAuth } from "../../context/AuthContext";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -9,11 +12,33 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const getCsrfToken = () =>
-    document.cookie
-      .split("; ") // 1. Split cookies into individual key=value pairs
-      .find((row) => row.startsWith("csrftoken=")) // 2. Find the one that starts with 'csrftoken='
-      ?.split("=")[1] ?? ""; // 3. Split that pair on '=' and take the value (index 1)
+  const { login } = useAuth();
+
+  const handleLogin = async (username: string, password: string) => {
+    setLoading(true);
+    const url = "http://127.0.0.1:8000/api/login/";
+    try {
+      const res = await axios.post(url, {
+        username,
+        password,
+      });
+
+      if (res.status === 200) {
+        const { access: accessToken, refresh: refreshToken } = res.data;
+        login({ accessToken, refreshToken });
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      const errorMessage = error.response?.data
+        ? (error.response.data as { detail: string }).detail
+        : "";
+      setError(errorMessage);
+      console.error("Login API Error\n", error.response?.data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-container">
@@ -71,6 +96,9 @@ const Login: React.FC = () => {
             type="submit"
             className="auth-button primary"
             disabled={loading}
+            onClick={() => {
+              handleLogin(username, password);
+            }}
           >
             {loading ? (
               <>
@@ -115,53 +143,6 @@ const Login: React.FC = () => {
             </button>
           </p>
         </div>
-
-        <button
-          onClick={() => {
-            fetch("http://127.0.0.1:8000/api/transactions/", {
-              method: "GET",
-            }).then((res) => {
-              res.json().then((data) => {
-                console.log(data);
-              });
-            });
-          }}
-        >
-          <p>Transaction Mock</p>
-        </button>
-
-        <button
-          onClick={() => {
-            fetch("http://127.0.0.1:8000/api-auth/login/", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCsrfToken(),
-              },
-              credentials: "include",
-              body: JSON.stringify({
-                username: "minilog",
-                password: "minilog123",
-              }),
-            })
-              .then((res) => {
-                console.log(res);
-                res
-                  .json()
-                  .then((data) => {
-                    console.log(data);
-                  })
-                  .catch((err) => {
-                    console.error("Json Conversion Error\n", err);
-                  });
-              })
-              .catch((err) => {
-                console.error("Login Mock Error\n", err);
-              });
-          }}
-        >
-          <p>Login Mock</p>
-        </button>
       </div>
     </div>
   );

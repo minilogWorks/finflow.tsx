@@ -1,5 +1,13 @@
 // src/context/AuthContext.tsx
-import { createContext, useContext, ReactNode, useState } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+} from "react";
+import { Tokens } from "../types";
+import { StorageService } from "../services/StorageService";
 
 interface User {
   id: number;
@@ -9,8 +17,11 @@ interface User {
 }
 
 interface AuthContextType {
+  isAuthenticated: boolean;
+  authLoading: boolean;
   user: User | null;
-  login: (userData: User) => void;
+  tokens: Tokens | null;
+  login: (tokens: Tokens) => void;
   logout: () => void;
 }
 
@@ -18,17 +29,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [tokens, setTokens] = useState<Tokens | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const login = (userData: User) => {
-    setUser(userData);
+  useEffect(() => {
+    const tokens = StorageService.getTokens();
+    if (tokens) {
+      setTokens(tokens);
+      setIsAuthenticated(true);
+    }
+    setAuthLoading(false);
+  }, []);
+
+  const login = (tokens: Tokens) => {
+    setTokens(tokens);
+    StorageService.saveTokens(tokens);
+
+    setIsAuthenticated(true);
   };
 
   const logout = () => {
     setUser(null);
+    setTokens(null);
+    StorageService.deleteTokens();
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, authLoading, user, tokens, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
