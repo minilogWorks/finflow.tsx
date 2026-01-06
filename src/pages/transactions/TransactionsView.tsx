@@ -1,19 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, Filter, Plus } from "lucide-react";
-import { Transaction, Category } from "../../types";
 import TransactionTable from "./TransactionTable";
 import FilterModal from "./FilterModal";
 import "./TransactionsView.css";
 import { StorageService } from "../../services/StorageService";
-import TransactionForm from "../../components/shared/TransactionForm";
-import Modal from "../../components/shared/Modal";
-
-interface TransactionsViewProps {
-  onAddTransaction: () => void;
-  onEditTransaction: (id: string) => void;
-  onDeleteTransaction: (id: string) => void;
-  isMobile: boolean;
-}
 
 interface FilterState {
   month: string;
@@ -22,19 +12,40 @@ interface FilterState {
   description: string;
 }
 
-const TransactionsView: React.FC<TransactionsViewProps> = ({
-  onAddTransaction,
-  onEditTransaction,
-  onDeleteTransaction,
-  isMobile,
-}) => {
+const TransactionsView: React.FC = () => {
   const [showFilter, setShowFilter] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     month: "",
     year: "",
     categoryId: "",
     description: "",
   });
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const onAddTransaction = () => {
+    alert("Add transaction functionality - to be implemented");
+  };
+
+  const onEditTransaction = (id: string) => {
+    console.log("Edit transaction:", id);
+    alert("Edit transaction functionality - to be implemented");
+  };
+
+  const onDeleteTransaction = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this transaction?")) {
+      if (StorageService.deleteTransaction(id)) {
+        alert("Transaction deleted successfully!");
+        window.location.reload();
+      }
+    }
+  };
 
   const handleExport = () => {
     alert("Export functionality coming soon!");
@@ -83,21 +94,6 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({
 
   const hasActiveFilters =
     filters.month || filters.year || filters.categoryId || filters.description;
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingTransactionId, setEditingTransactionId] = useState<
-    string | null
-  >(null);
-
-  const openTransactionModal = (id: string | null = null) => {
-    setEditingTransactionId(id);
-    setModalOpen(true);
-  };
-
-  const closeTransactionModal = () => {
-    setModalOpen(false);
-    setEditingTransactionId(null);
-  };
 
   return (
     <>
@@ -191,25 +187,11 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({
       </div>
       <button
         className="fab"
-        onClick={() => openTransactionModal()}
+        onClick={onAddTransaction}
         title="Add Transaction"
       >
         <Plus size={24} />
       </button>
-
-      <Modal
-        isOpen={modalOpen}
-        onClose={closeTransactionModal}
-        title={
-          editingTransactionId ? "Edit Transaction" : "Add New Transaction"
-        }
-      >
-        <TransactionForm
-          editingTransactionId={editingTransactionId}
-          onSave={() => {}}
-          onCancel={closeTransactionModal}
-        />
-      </Modal>
     </>
   );
 };

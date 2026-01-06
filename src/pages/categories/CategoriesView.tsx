@@ -2,81 +2,27 @@ import React, { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { Category } from "../../types";
 import CategoryCard from "./CategoryCard";
-import "./CategoriesView.css";
+import AddCategoryModal from "./AddCategoryModal";
 import { StorageService } from "../../services/StorageService";
-import api from "../../utils/api";
-import { AxiosError } from "axios";
+import { generateId } from "../../utils/helpers";
+import "./CategoriesView.css";
 
 interface CategoriesViewProps {
   categories: Category[];
+  onCategoriesChange: (categories: Category[]) => void;
 }
 
-const CategoriesView: React.FC<CategoriesViewProps> = () => {
-  const categories = StorageService.getCategories();
+const CategoriesView: React.FC<CategoriesViewProps> = ({
+  categories,
+  onCategoriesChange,
+}) => {
   const [activeTab, setActiveTab] = useState<
     "all" | "expense" | "income" | "custom"
   >("all");
-
-  useEffect(() => {
-    const getCategories = async () => {
-      const url = `api/categories/`;
-      try {
-        const res = await api.get(url);
-        if (res.status === 200) {
-          const categories = res.data;
-          console.log({ categories });
-          // setCategory(category);
-        }
-      } catch (err) {
-        const error = err as AxiosError;
-        const errorMessage = error.response?.data
-          ? (error.response.data as { detail: string }).detail
-          : "";
-
-        console.error("Get Categories API Error\n", errorMessage);
-      }
-    };
-
-    const getCategoryById = async (categoryId: number) => {
-      const url = `api/categories/${categoryId}/`;
-      try {
-        const res = await api.get(url);
-        if (res.status === 200) {
-          const category = res.data;
-          console.log({ category });
-          // setCategory(category);
-        }
-      } catch (err) {
-        const error = err as AxiosError;
-        const errorMessage = error.response?.data
-          ? (error.response.data as { detail: string }).detail
-          : "";
-
-        console.error("Get Category By Id API Error\n", errorMessage);
-      }
-    };
-
-    const getTransactionById = async (transactionId: number) => {
-      try {
-        const res = await api.get(`api/transactions/${transactionId}/`);
-        if (res.status === 200) {
-          const transaction = res.data;
-          console.log(transaction);
-        }
-      } catch (err) {
-        const error = err as AxiosError;
-        const errorMessage = error.response?.data
-          ? (error.response.data as { detail: string }).detail
-          : "";
-
-        console.error("Get Transactions By ID API Error\n", errorMessage);
-      }
-    };
-
-    getCategories();
-    getCategoryById(1);
-    getTransactionById(1);
-  }, []);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<
+    Category | undefined
+  >();
 
   const expenseCategories = categories.filter((c) => c.type === "expense");
   const incomeCategories = categories.filter((c) => c.type === "income");
@@ -95,11 +41,66 @@ const CategoriesView: React.FC<CategoriesViewProps> = () => {
     }
   };
 
+  const handleAddCategory = () => {
+    setEditingCategory(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this category? This will also delete all transactions in this category."
+      )
+    ) {
+      return;
+    }
+
+    // Delete category from categories
+    const updatedCategories = categories.filter((c) => c.id !== categoryId);
+
+    // Delete transactions associated with this category
+    const transactions = StorageService.getTransactions();
+    const updatedTransactions = transactions.filter(
+      (t) => t.categoryId !== categoryId
+    );
+
+    // Update storage
+    StorageService.saveTransactions(updatedTransactions);
+    onCategoriesChange(updatedCategories);
+  };
+
+  const handleSaveCategory = (categoryData: Omit<Category, "id">) => {
+    let updatedCategories: Category[];
+
+    if (editingCategory) {
+      // Update existing category
+      updatedCategories = categories.map((c) =>
+        c.id === editingCategory.id
+          ? { ...categoryData, id: editingCategory.id }
+          : c
+      );
+    } else {
+      // Add new category
+      const newCategory: Category = {
+        ...categoryData,
+        id: generateId(),
+      };
+      updatedCategories = [...categories, newCategory];
+    }
+
+    onCategoriesChange(updatedCategories);
+  };
+
   return (
     <div className="categories-view">
       <div className="view-header">
         <h2>Categories</h2>
-        <button className="btn-primary">
+        <button className="btn-primary" onClick={handleAddCategory}>
           <Plus size={18} />
           Add Category
         </button>
@@ -122,9 +123,21 @@ const CategoriesView: React.FC<CategoriesViewProps> = () => {
 
       <div className="categories-grid">
         {getFilteredCategories().map((category) => (
-          <CategoryCard key={category.id} category={category} />
+          <CategoryCard
+            key={category.id}
+            category={category}
+            onEdit={handleEditCategory}
+            onDelete={handleDeleteCategory}
+          />
         ))}
       </div>
+
+      <AddCategoryModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveCategory}
+        editingCategory={editingCategory}
+      />
     </div>
   );
 };
