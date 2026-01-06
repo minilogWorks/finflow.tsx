@@ -17,23 +17,17 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({
   onCategoriesChange,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "all" | "expense" | "income" | "custom"
+    "all" | "custom"
   >("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<
     Category | undefined
   >();
 
-  const expenseCategories = categories.filter((c) => c.type === "expense");
-  const incomeCategories = categories.filter((c) => c.type === "income");
   const customCategories = categories.filter((c) => c.isCustom);
 
   const getFilteredCategories = () => {
     switch (activeTab) {
-      case "expense":
-        return expenseCategories;
-      case "income":
-        return incomeCategories;
       case "custom":
         return customCategories;
       default:
@@ -107,15 +101,13 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({
       </div>
 
       <div className="category-tabs">
-        {(["all", "expense", "income", "custom"] as const).map((tab) => (
+        {["all", "custom"].map((tab) => (
           <button
             key={tab}
             className={`category-tab ${activeTab === tab ? "active" : ""}`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => setActiveTab(tab as "all" | "custom")}
           >
             {tab === "all" && "All Categories"}
-            {tab === "expense" && `Expenses (${expenseCategories.length})`}
-            {tab === "income" && `Income (${incomeCategories.length})`}
             {tab === "custom" && `Custom (${customCategories.length})`}
           </button>
         ))}

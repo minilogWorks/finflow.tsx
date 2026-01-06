@@ -55,9 +55,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </div>
         <div className="category-info">
           <h4>{category.name}</h4>
-          <span className={`category-type ${category.type}`}>
-            {category.type === "expense" ? "Expense" : "Income"}
-          </span>
           {category.isCustom && <span className="custom-badge">Custom</span>}
         </div>
         <div className="category-actions">

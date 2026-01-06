@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { X, Search } from "lucide-react"; // Add Search icon
-import { Category, CategoryType } from "../../types";
+import { Category } from "../../types";
 import { categoryIcons } from "../../utils/categoryIcons";
 import "./AddCategoryModal.css";
 
@@ -18,7 +18,8 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   editingCategory,
 }) => {
   const [name, setName] = useState("");
-  const [type, setType] = useState<CategoryType>("expense");
+  // type removed from UI; defaulting to expense for backward compatibility
+  const [type] = useState<"expense" | "income">("expense");
   const [color, setColor] = useState("#4361ee");
   const [icon, setIcon] = useState("beaker"); // Default to lab icon now
   const [searchTerm, setSearchTerm] = useState(""); // Add search state
@@ -26,12 +27,12 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   useEffect(() => {
     if (editingCategory) {
       setName(editingCategory.name);
-      setType(editingCategory.type);
+      // keep existing type, but not editable in UI
       setColor(editingCategory.color);
       setIcon(editingCategory.icon || "beaker");
     } else {
       setName("");
-      setType("expense");
+      // default type kept as expense (hidden)
       setColor("#4361ee");
       setIcon("beaker"); // Default to lab icon
       setSearchTerm("");
@@ -114,25 +115,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             />
           </div>
 
-          <div className="form-group">
-            <label>Category Type</label>
-            <div className="type-options">
-              <button
-                type="button"
-                className={`type-btn ${type === "expense" ? "active" : ""}`}
-                onClick={() => setType("expense")}
-              >
-                Expense
-              </button>
-              <button
-                type="button"
-                className={`type-btn ${type === "income" ? "active" : ""}`}
-                onClick={() => setType("income")}
-              >
-                Income
-              </button>
-            </div>
-          </div>
+          {/* Category Type selection removed from UI as requested */}
 
           {/* Updated Icon Selection with Search */}
           <div className="form-group">
