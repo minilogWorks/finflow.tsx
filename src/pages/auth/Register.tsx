@@ -9,9 +9,9 @@ const Register: React.FC = () => {
     confirmPassword: "",
     name: "",
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error] = useState("");
+  const [success] = useState("");
+  const [loading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

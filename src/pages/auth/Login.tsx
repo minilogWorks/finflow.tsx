@@ -120,7 +120,15 @@ const Login: React.FC = () => {
           <button
             type="button"
             className="auth-button guest"
-            onClick={() => {}}
+            onClick={() => {
+              // Create guest tokens to bypass authentication
+              const guestTokens = {
+                accessToken: 'guest-token',
+                refreshToken: 'guest-refresh-token'
+              };
+              login(guestTokens);
+              navigate("/", { replace: true });
+            }}
             disabled={loading}
           >
             <i data-lucide="user-check"></i>

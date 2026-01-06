@@ -7,7 +7,7 @@ import RecentTransactions from "./RecentTransactions";
 import TopCategories from "./TopCategories";
 import SpendingChart from "./SpendingChart";
 import "./DashboardView.css";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useAuth } from "../../context/AuthContext";
 import Loader from "../../components/shared/Loader";
 import api from "../../utils/api";
@@ -18,7 +18,6 @@ const DashboardView = () => {
   );
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
-  const [transactionsError, setTransactionsError] = useState("");
 
   const { tokens } = useAuth();
 
@@ -106,12 +105,20 @@ const DashboardView = () => {
   };
 
   useEffect(() => {
-    getYearlyTransactionsAPI();
-  }, []);
-
-  useEffect(() => {
-    getTransactionsSummaryAPI();
-  }, []);
+    // Check if guest mode (guest tokens)
+    const isGuest = tokens?.accessToken === 'guest-token';
+    
+    if (isGuest) {
+      // Use local storage for guest users
+      const localTransactions = StorageService.getTransactions();
+      setTransactions(localTransactions);
+      setTransactionsLoading(false);
+    } else {
+      // Use API for authenticated users
+      getYearlyTransactionsAPI();
+      getTransactionsSummaryAPI();
+    }
+  }, [tokens]);
 
   const getYearlyTransactionsAPI = async () => {
     if (!tokens) {
