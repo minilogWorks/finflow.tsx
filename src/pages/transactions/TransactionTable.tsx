@@ -22,7 +22,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   isMobile,
 }) => {
   const renderDesktopRow = (transaction: Transaction) => {
-    const category = categories.find((c) => c.id === transaction.categoryId);
+    const category = categories.find((c) => c.id === transaction.category);
     const iconName = getCategoryIcon(category?.name || "default");
     const color = getCategoryColor(category?.name || "default");
     const Icon = getLucideIcon(iconName);
@@ -47,7 +47,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         </td>
         <td className={`amount ${transaction.type}`}>
           {transaction.type === "income" ? "+" : "-"}
-          {formatCurrency(transaction.amount)}
+          {formatCurrency(parseInt(transaction.amount))}
         </td>
         <td>
           <div className="table-actions">
@@ -67,7 +67,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   const renderMobileCard = (transaction: Transaction) => {
-    const category = categories.find((c) => c.id === transaction.categoryId);
+    const category = categories.find((c) => c.id === transaction.category);
     const iconName = getCategoryIcon(category?.name || "default");
     const color = getCategoryColor(category?.name || "default");
     const Icon = getLucideIcon(iconName);
@@ -86,7 +86,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
           <div className={`transaction-amount ${transaction.type}`}>
             {transaction.type === "income" ? "+" : "-"}
-            {formatCurrency(transaction.amount)}
+            {formatCurrency(parseInt(transaction.amount))}
           </div>
         </div>
         {transaction.notes && (

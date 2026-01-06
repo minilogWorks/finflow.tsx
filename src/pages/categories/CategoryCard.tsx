@@ -18,9 +18,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   onDelete,
 }) => {
   const transactions = StorageService.getTransactions().filter(
-    (t) => t.categoryId === category.id
+    (t) => t.category === category.id
   );
-  const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalSpent = transactions.reduce(
+    (sum, t) => sum + parseInt(t.amount),
+    0
+  );
   const usageCount = transactions.length;
 
   // Find the icon component based on category.icon

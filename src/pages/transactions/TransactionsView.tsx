@@ -85,7 +85,7 @@ const TransactionsView: React.FC = () => {
     }
 
     // Filter by category
-    if (filters.categoryId && transaction.categoryId !== filters.categoryId) {
+    if (filters.categoryId && transaction.category !== filters.categoryId) {
       return false;
     }
 

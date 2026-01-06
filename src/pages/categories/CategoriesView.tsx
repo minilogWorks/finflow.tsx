@@ -66,7 +66,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({
     // Delete transactions associated with this category
     const transactions = StorageService.getTransactions();
     const updatedTransactions = transactions.filter(
-      (t) => t.categoryId !== categoryId
+      (t) => t.category !== categoryId
     );
 
     // Update storage

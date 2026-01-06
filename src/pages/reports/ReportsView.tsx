@@ -39,7 +39,9 @@ export interface ReportsViewProps {
 const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
   const [generatedAt, setGeneratedAt] = useState<Date | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<"month" | "quarter" | "year">("month");
+  const [selectedPeriod, setSelectedPeriod] = useState<
+    "month" | "quarter" | "year"
+  >("month");
 
   const transactions = StorageService.getTransactions();
   const categories = StorageService.getCategories();
@@ -87,12 +89,16 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
 
       const income = monthTransactions
         .filter((t) => t.type === "income")
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + parseInt(t.amount), 0);
       const expense = monthTransactions
         .filter((t) => t.type === "expense")
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + parseInt(t.amount), 0);
 
-      monthlyData.push({ income, expense, month: monthLabels[monthLabels.length - 1] });
+      monthlyData.push({
+        income,
+        expense,
+        month: monthLabels[monthLabels.length - 1],
+      });
     }
 
     // Category breakdown
@@ -100,14 +106,18 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
     periodTransactions
       .filter((t) => t.type === "expense")
       .forEach((t) => {
-        const current = categoryMap.get(t.categoryId) || 0;
-        categoryMap.set(t.categoryId, current + t.amount);
+        const current = categoryMap.get(t.category) || 0;
+        categoryMap.set(t.category, current + parseInt(t.amount));
       });
 
     const categoryData = Array.from(categoryMap.entries())
       .map(([catId, amount]) => {
         const cat = categories.find((c) => c.id === catId);
-        return { name: cat?.name || "Unknown", amount, color: cat?.color || "#999" };
+        return {
+          name: cat?.name || "Unknown",
+          amount,
+          color: cat?.color || "#999",
+        };
       })
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 8);
@@ -120,10 +130,26 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
     { label: "Income", value: stats.totalIncome, fmt: "currency" as const },
     { label: "Expense", value: stats.totalExpense, fmt: "currency" as const },
     { label: "Net", value: stats.netBalance, fmt: "currency" as const },
-    { label: "Savings Rate", value: stats.savingsRate, fmt: "percent" as const },
-    { label: "Avg Daily Spend", value: stats.averageDailySpend, fmt: "currency" as const },
-    { label: "Biggest Expense", value: stats.biggestExpense, fmt: "currency" as const },
-    { label: "Transactions", value: stats.transactionCount, fmt: "number" as const },
+    {
+      label: "Savings Rate",
+      value: stats.savingsRate,
+      fmt: "percent" as const,
+    },
+    {
+      label: "Avg Daily Spend",
+      value: stats.averageDailySpend,
+      fmt: "currency" as const,
+    },
+    {
+      label: "Biggest Expense",
+      value: stats.biggestExpense,
+      fmt: "currency" as const,
+    },
+    {
+      label: "Transactions",
+      value: stats.transactionCount,
+      fmt: "number" as const,
+    },
   ];
 
   const formatValue = (v: number, fmt: "currency" | "percent" | "number") => {
@@ -162,7 +188,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
 
   const handleExportJSON = () => {
     const payload = buildJsonPayload();
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
     download(blob, `report-${Date.now()}.json`);
     setExportOpen(false);
   };
@@ -170,7 +198,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
   const handleExportCSV = () => {
     const lines = ["label,value"];
     lines.push(...summary.map((s) => `${s.label},${s.value}`));
-    const meta = generatedAt ? `generatedAt,${generatedAt.toISOString()}` : "generatedAt,";
+    const meta = generatedAt
+      ? `generatedAt,${generatedAt.toISOString()}`
+      : "generatedAt,";
     const period = `period,${selectedPeriod}`;
     const csv = [meta, period, "", ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -287,7 +317,10 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
           label: function (context: any) {
             const label = context.label || "";
             const value = context.parsed || 0;
-            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const total = context.dataset.data.reduce(
+              (a: number, b: number) => a + b,
+              0
+            );
             const percentage = ((value / total) * 100).toFixed(1);
             return `${label}: $${value.toFixed(2)} (${percentage}%)`;
           },
@@ -333,8 +366,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
         <div className="header-actions" style={{ position: "relative" }}>
           <div className="period-selector">
             <Calendar size={18} />
-            <select 
-              value={selectedPeriod} 
+            <select
+              value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value as any)}
               className="period-select"
             >
@@ -359,10 +392,18 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
           </button>
           {exportOpen && (
             <div role="menu" className="export-menu">
-              <button role="menuitem" className="export-menu-item" onClick={handleExportJSON}>
+              <button
+                role="menuitem"
+                className="export-menu-item"
+                onClick={handleExportJSON}
+              >
                 Export JSON
               </button>
-              <button role="menuitem" className="export-menu-item" onClick={handleExportCSV}>
+              <button
+                role="menuitem"
+                className="export-menu-item"
+                onClick={handleExportCSV}
+              >
                 Export CSV
               </button>
             </div>
@@ -433,7 +474,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
             <div className="budget-item">
               <div className="budget-label">
                 <span>Spending</span>
-                <span className="budget-amount">${stats.totalExpense.toFixed(2)}</span>
+                <span className="budget-amount">
+                  ${stats.totalExpense.toFixed(2)}
+                </span>
               </div>
               <div className="budget-bar">
                 <div
@@ -450,7 +493,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
             <div className="budget-item">
               <div className="budget-label">
                 <span>Savings</span>
-                <span className="budget-amount">${stats.netBalance.toFixed(2)}</span>
+                <span className="budget-amount">
+                  ${stats.netBalance.toFixed(2)}
+                </span>
               </div>
               <div className="budget-bar">
                 <div
@@ -460,7 +505,9 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
                   }}
                 ></div>
               </div>
-              <div className="budget-percentage">{stats.savingsRate.toFixed(1)}%</div>
+              <div className="budget-percentage">
+                {stats.savingsRate.toFixed(1)}%
+              </div>
             </div>
           </div>
         </div>
