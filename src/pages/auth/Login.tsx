@@ -4,6 +4,7 @@ import axios, { AxiosError } from "axios";
 
 import "./Auth.css";
 import { useAuth } from "../../context/AuthContext";
+import { IUser } from "../../types";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -24,8 +25,12 @@ const Login: React.FC = () => {
       });
 
       if (res.status === 200) {
-        const { access: accessToken, refresh: refreshToken } = res.data;
-        login({ accessToken, refreshToken });
+        const { access: accessToken, refresh: refreshToken, user } = res.data;
+        const { id, email, username, is_staff } = user;
+        login(
+          { accessToken, refreshToken },
+          { id, email, username, isStaff: is_staff }
+        );
         navigate("/", { replace: true });
       }
     } catch (err) {

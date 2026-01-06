@@ -5,6 +5,7 @@ import {
   FinancialStats,
   TopCategory,
   Tokens,
+  IUser,
 } from "../types";
 
 const STORAGE_KEYS = {
@@ -13,7 +14,6 @@ const STORAGE_KEYS = {
   CATEGORIES: "finflow_categories_v1",
   TOKENS: "finflow_jwt_tokens",
 };
-
 
 export class StorageService {
   // ========== TOKEN HANDLERS ==========
@@ -40,20 +40,24 @@ export class StorageService {
     localStorage.removeItem(STORAGE_KEYS.TOKENS);
   }
   // ========== USER METHODS ==========
-  static saveUser(user: User): void {
+  static saveUser(user: IUser): void {
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
   }
 
-  static getUser(): User | null {
+  static getUser(): IUser | null {
     const data = localStorage.getItem(STORAGE_KEYS.USER);
     return data ? JSON.parse(data) : null;
   }
 
-  static updateUser(updates: Partial<User>): void {
+  static updateUser(updates: Partial<IUser>): void {
     const user = this.getUser();
     if (user) {
       this.saveUser({ ...user, ...updates });
     }
+  }
+
+  static deleteUser(): void {
+    localStorage.removeItem(STORAGE_KEYS.USER);
   }
 
   // ========== TRANSACTION METHODS ==========

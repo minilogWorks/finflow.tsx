@@ -6,29 +6,22 @@ import {
   useState,
   useEffect,
 } from "react";
-import { Tokens } from "../types";
+import { IUser, Tokens } from "../types";
 import { StorageService } from "../services/StorageService";
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  // Add other user properties as needed
-}
 
 interface AuthContextType {
   isAuthenticated: boolean;
   authLoading: boolean;
-  user: User | null;
+  user: IUser | null;
   tokens: Tokens | null;
-  login: (tokens: Tokens) => void;
+  login: (tokens: Tokens, user: IUser) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [tokens, setTokens] = useState<Tokens | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,9 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthLoading(false);
   }, []);
 
-  const login = (tokens: Tokens) => {
+  const login = (tokens: Tokens, user: IUser) => {
     setTokens(tokens);
     StorageService.saveTokens(tokens);
+
+    setUser(user);
+    StorageService.saveUser(user);
 
     setIsAuthenticated(true);
   };
@@ -53,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setTokens(null);
     StorageService.deleteTokens();
+    StorageService.deleteUser();
     setIsAuthenticated(false);
   };
 

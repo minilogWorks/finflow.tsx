@@ -1,167 +1,52 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Info } from "lucide-react";
-import { FinancialStats, Transaction, TopCategory } from "../../types";
-import { StorageService } from "../../services/StorageService";
 import StatsCards from "./StatsCards";
 import RecentTransactions from "./RecentTransactions";
 import TopCategories from "./TopCategories";
 import SpendingChart from "./SpendingChart";
 import "./DashboardView.css";
-import axios, { AxiosError } from "axios";
-import { useAuth } from "../../context/AuthContext";
 import Loader from "../../components/shared/Loader";
-import api from "../../utils/api";
+import { useQueries } from "@tanstack/react-query";
+import {
+  calculateYearlyStats,
+  getRecentYearlyTransactions,
+  getYearlyTopCategories,
+} from "../../utils/helpers";
+import { getTransactionsQueryOptions } from "../../queryOptions/getTransactionsQueryOptions";
+import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
 
 const DashboardView = () => {
   const [selectedYear, setSelectedYear] = useState<number>(
     new Date().getFullYear()
   );
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [transactionsLoading, setTransactionsLoading] = useState(true);
-  const [transactionsError, setTransactionsError] = useState("");
 
-  const { tokens } = useAuth();
+  const [transactions, categories] = useQueries({
+    queries: [getTransactionsQueryOptions(), getCategoriesQueryOptions()],
+  });
 
-  const calculateYearlyStats = (): FinancialStats => {
-    const totalIncome = transactions
-      .filter((t) => t.type === "income")
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const totalExpense = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const netBalance = totalIncome - totalExpense;
-    const savingsRate = totalIncome > 0 ? (netBalance / totalIncome) * 100 : 0;
-
-    const expenseTransactions = transactions.filter(
-      (t) => t.type === "expense"
-    );
-    const biggestExpense =
-      expenseTransactions.length > 0
-        ? Math.max(...expenseTransactions.map((t) => t.amount))
-        : 0;
-
-    const averageDailySpend =
-      expenseTransactions.length > 0
-        ? totalExpense / expenseTransactions.length
-        : 0;
-
-    const financialStats: FinancialStats = {
-      totalIncome,
-      totalExpense,
-      netBalance,
-      savingsRate,
-      biggestExpense,
-      averageDailySpend,
-      transactionCount: transactions.length, // This should also use yearlyTransactions
-    };
-
-    console.log(financialStats);
-    return financialStats;
-  };
-
-  // Get recent transactions for selected year
-  // TODO: This should be an API call
-  const getRecentYearlyTransactions = (limit: number = 5): Transaction[] => {
-    // const yearlyTransactions = getYearlyTransactions();
-    return transactions
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, limit);
-  };
-
-  // Get top categories for selected year
-  const getYearlyTopCategories = (limit: number = 5): TopCategory[] => {
-    // const yearlyTransactions = getYearlyTransactions();
-    const categories = StorageService.getCategories();
-
-    const expenseTransactions = transactions.filter(
-      (t) => t.type === "expense"
-    );
-    const totalExpense = expenseTransactions.reduce(
-      (sum, t) => sum + t.amount,
-      0
-    );
-
-    const categoryMap = new Map<string, number>();
-    expenseTransactions.forEach((transaction) => {
-      const current = categoryMap.get(transaction.categoryId) || 0;
-      categoryMap.set(transaction.categoryId, current + transaction.amount);
-    });
-
-    return Array.from(categoryMap.entries())
-      .map(([categoryId, amount]) => {
-        const category = categories.find((c) => c.id === categoryId);
-        if (!category) return null;
-
-        return {
-          category,
-          amount,
-          percentage: totalExpense > 0 ? (amount / totalExpense) * 100 : 0,
-        };
-      })
-      .filter((item): item is TopCategory => item !== null)
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, limit);
-  };
-
-  useEffect(() => {
-    getYearlyTransactionsAPI();
-  }, []);
-
-  useEffect(() => {
-    getTransactionsSummaryAPI();
-  }, []);
-
-  const getYearlyTransactionsAPI = async () => {
-    if (!tokens) {
-      console.error("Tokens are not available");
-      return;
-    }
-
-    try {
-      const res = await api.get("api/transactions/");
-      if (res.status === 200) {
-        const transactions = res.data;
-        console.log(transactions);
-        setTransactions(transactions);
-      }
-    } catch (err) {
-      const error = err as AxiosError;
-      const errorMessage = error.response?.data
-        ? (error.response.data as { detail: string }).detail
-        : "";
-
-      console.error("Get Transactions API Error\n", errorMessage);
-    } finally {
-      setTransactionsLoading(false);
-    }
-  };
-
-  const getTransactionsSummaryAPI = async () => {
-    try {
-      const res = await api.get("api/transactions/summary/");
-      if (res.status === 200) {
-        const summary = res.data;
-        console.log(summary);
-      }
-    } catch (err) {
-      const error = err as AxiosError;
-      const errorMessage = error.response?.data
-        ? (error.response.data as { detail: string }).detail
-        : "";
-
-      console.error("Get Transactions Summary API Error\n", errorMessage);
-    }
-  };
-
-  const stats = calculateYearlyStats();
-  const recentTransactions = getRecentYearlyTransactions(5);
-  const topCategories = getYearlyTopCategories(5);
-
-  if (transactionsLoading) {
+  // TODO: Clean up isPending and error states
+  if (transactions.isPending || categories.isPending) {
     return <Loader />;
   }
+
+  if (transactions.error || categories.error) {
+    return (
+      <>
+        {transactions.error && transactions.error.message}
+        {categories.error && categories.error.message}
+      </>
+    );
+  }
+
+  const stats = calculateYearlyStats(transactions.data);
+  const recentTransactions = getRecentYearlyTransactions(transactions.data, 5);
+  const topCategories = getYearlyTopCategories(
+    transactions.data.filter(
+      (transaction) => transaction.type.toLowerCase() === "expense"
+    ),
+    categories.data,
+    5
+  );
 
   return (
     <div className="dashboard-content">

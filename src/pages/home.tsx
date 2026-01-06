@@ -4,6 +4,9 @@ import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import { Outlet } from "react-router";
+import { getAllTransactions } from "../api/transactions";
+import { useQuery } from "@tanstack/react-query";
+import { calculateYearlyStats } from "../utils/helpers";
 
 export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
@@ -16,7 +19,25 @@ export default function Home() {
 
   const checkMobile = () => setIsMobile(window.innerWidth <= 768);
 
-  const stats = StorageService.calculateStats();
+  const {
+    data: transactions,
+    isPending,
+    error,
+  } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: getAllTransactions,
+  });
+
+  // TODO: Clean up this page. What should happen when isPending or an error occurs.
+  if (isPending) {
+    return <></>;
+  }
+
+  if (error) {
+    return <></>;
+  }
+
+  const stats = calculateYearlyStats(transactions);
 
   return (
     <div className="app-container">

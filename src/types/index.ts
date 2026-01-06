@@ -1,11 +1,18 @@
+export interface IUser {
+  id: number;
+  username: string;
+  email: string;
+  isStaff: boolean;
+}
+
 export type TransactionType = "expense" | "income";
 
 export interface Transaction {
   id: string;
   title: string;
-  amount: number;
+  amount: string;
   type: TransactionType;
-  categoryId: string;
+  category: string;
   subcategoryId?: string;
   date: string;
   notes?: string;
