@@ -4,6 +4,12 @@ import TransactionTable from "./TransactionTable";
 import FilterModal from "./FilterModal";
 import "./TransactionsView.css";
 import { StorageService } from "../../services/StorageService";
+import { useQueries } from "@tanstack/react-query";
+import { getTransactionsQueryOptions } from "../../queryOptions/getTransactionsQueryOptions";
+import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
+import Modal from "../../components/shared/Modal";
+import TransactionForm from "../../components/shared/TransactionForm";
+import { Transaction } from "../../types";
 
 interface FilterState {
   month: string;
@@ -13,6 +19,9 @@ interface FilterState {
 }
 
 const TransactionsView: React.FC = () => {
+  const [transactionToEdit, setTransactionToEdit] =
+    useState<Transaction | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
   const [showFilter, setShowFilter] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -29,13 +38,14 @@ const TransactionsView: React.FC = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const onAddTransaction = () => {
-    alert("Add transaction functionality - to be implemented");
+  const addTransaction = () => {
+    setTransactionToEdit(null);
+    setShowModal(true);
   };
 
-  const onEditTransaction = (id: string) => {
-    console.log("Edit transaction:", id);
-    alert("Edit transaction functionality - to be implemented");
+  const editTransaction = (transaction: Transaction) => {
+    setTransactionToEdit(transaction);
+    setShowModal(true);
   };
 
   const onDeleteTransaction = (id: string) => {
@@ -55,11 +65,28 @@ const TransactionsView: React.FC = () => {
     setFilters(newFilters);
   };
 
-  const transactions = StorageService.getTransactions();
-  const categories = StorageService.getCategories();
+  const [transactions, categories] = useQueries({
+    queries: [getTransactionsQueryOptions(), getCategoriesQueryOptions()],
+  });
+
+  if (transactions.isPending || categories.isPending) {
+    return <></>;
+  }
+
+  if (transactions.error || categories.error) {
+    return (
+      <>
+        {transactions.error && transactions.error.message}
+        {categories.error && categories.error.message}
+      </>
+    );
+  }
+
+  // const transactions = StorageService.getTransactions();
+  // const categories = StorageService.getCategories();
 
   // Simple filter function - no complex code
-  const filteredTransactions = transactions.filter((transaction) => {
+  const filteredTransactions = transactions.data.filter((transaction) => {
     const date = new Date(transaction.date);
     const transactionMonth = String(date.getMonth() + 1).padStart(2, "0");
     const transactionYear = String(date.getFullYear());
@@ -104,7 +131,8 @@ const TransactionsView: React.FC = () => {
             {hasActiveFilters && (
               <div className="active-filters">
                 <span className="filter-badge">
-                  {filteredTransactions.length} of {transactions.length} shown
+                  {filteredTransactions.length} of {transactions.data.length}{" "}
+                  shown
                 </span>
                 {filters.description && (
                   <span className="filter-badge">
@@ -127,7 +155,11 @@ const TransactionsView: React.FC = () => {
                 {filters.categoryId && (
                   <span className="filter-badge">
                     Category:{" "}
-                    {categories.find((c) => c.id === filters.categoryId)?.name}
+                    {
+                      categories.data.find(
+                        (c) => c.id === parseInt(filters.categoryId)
+                      )?.name
+                    }
                   </span>
                 )}
               </div>
@@ -149,7 +181,7 @@ const TransactionsView: React.FC = () => {
               {hasActiveFilters && <span className="filter-indicator">•</span>}
             </button>
             {isMobile && (
-              <button className="btn-primary" onClick={onAddTransaction}>
+              <button className="btn-primary" onClick={addTransaction}>
                 <Plus size={18} />
               </button>
             )}
@@ -158,8 +190,8 @@ const TransactionsView: React.FC = () => {
 
         <TransactionTable
           transactions={filteredTransactions}
-          categories={categories}
-          onEdit={onEditTransaction}
+          categories={categories.data}
+          onEdit={editTransaction}
           onDelete={onDeleteTransaction}
           isMobile={isMobile}
         />
@@ -171,7 +203,7 @@ const TransactionsView: React.FC = () => {
                 ? "No transactions match your filters"
                 : "No transactions yet"}
             </p>
-            <button className="btn-primary" onClick={onAddTransaction}>
+            <button className="btn-primary" onClick={addTransaction}>
               <Plus size={18} />
               Add your first transaction
             </button>
@@ -181,17 +213,29 @@ const TransactionsView: React.FC = () => {
         <FilterModal
           isOpen={showFilter}
           onClose={() => setShowFilter(false)}
-          categories={categories}
+          categories={categories.data}
           onApplyFilters={handleApplyFilters}
         />
       </div>
-      <button
-        className="fab"
-        onClick={onAddTransaction}
-        title="Add Transaction"
-      >
+      <button className="fab" onClick={addTransaction} title="Add Transaction">
         <Plus size={24} />
       </button>
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+        }}
+        title="Add New Transaction"
+      >
+        <TransactionForm
+          transactionToEdit={transactionToEdit}
+          onCancel={() => {
+            setShowModal(false);
+          }}
+          onSave={() => {}}
+          onEdit={() => {}}
+        />
+      </Modal>
     </>
   );
 };

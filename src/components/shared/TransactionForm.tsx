@@ -1,95 +1,51 @@
-import React, { useState, useEffect } from "react";
-import { StorageService } from "../../services/StorageService";
+import React, { useState } from "react";
 import { Transaction, TransactionType } from "../../types";
 import "./TransactionForm.css";
+import { useQuery } from "@tanstack/react-query";
+import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
 
 interface TransactionFormProps {
-  editingTransactionId: string | null;
+  transactionToEdit: Transaction | null;
   onSave: (transactionData: Partial<Transaction>) => void;
+  onEdit: (transactionToEdit: Partial<Transaction>) => void;
   onCancel: () => void;
 }
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
-  editingTransactionId,
+  transactionToEdit,
   onSave,
+  onEdit,
   onCancel,
 }) => {
   const [formData, setFormData] = useState({
-    title: "",
-    amount: "",
-    type: "expense" as TransactionType,
-    date: new Date().toISOString().split("T")[0],
-    categoryId: "",
-    notes: "",
+    title: transactionToEdit ? transactionToEdit.title : "",
+    amount: transactionToEdit ? transactionToEdit.amount : 0,
+    type: transactionToEdit
+      ? transactionToEdit.type
+      : ("expense" as TransactionType),
+    date: transactionToEdit
+      ? new Date(transactionToEdit.date).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0],
+    category: transactionToEdit ? transactionToEdit.category : "",
+    notes: transactionToEdit ? transactionToEdit.notes : "",
   });
-
-  const categories = StorageService.getCategories();
-
-  // Get categories filtered by selected type
-  const getFilteredCategories = () => {
-    return categories.filter((c) => c.type === formData.type);
-  };
-
-  // Get default category for the selected type
-  const getDefaultCategory = () => {
-    const filtered = getFilteredCategories();
-    return filtered.length > 0 ? filtered[0].id : "";
-  };
-
-  useEffect(() => {
-    if (editingTransactionId) {
-      // Editing existing transaction
-      const transaction = StorageService.getTransactions().find(
-        (t) => t.id === editingTransactionId
-      );
-
-      if (transaction) {
-        setFormData({
-          title: transaction.title,
-          amount: transaction.amount.toString(),
-          type: transaction.type,
-          date: transaction.date,
-          categoryId: transaction.categoryId,
-          notes: transaction.notes || "",
-        });
-      }
-    } else {
-      // New transaction - set default category for expense type
-      const defaultCategory = getDefaultCategory();
-      setFormData((prev) => ({
-        ...prev,
-        categoryId: defaultCategory,
-      }));
-    }
-  }, [editingTransactionId]);
-
-  // Update category when transaction type changes
-  useEffect(() => {
-    if (!editingTransactionId) {
-      const defaultCategory = getDefaultCategory();
-      setFormData((prev) => ({
-        ...prev,
-        categoryId: defaultCategory,
-      }));
-    }
-  }, [formData.type]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const transactionData: Partial<Transaction> = {
       title: formData.title.trim(),
-      amount: parseFloat(formData.amount),
+      amount: formData.amount,
       type: formData.type,
       date: formData.date,
-      categoryId: formData.categoryId,
-      notes: formData.notes.trim() || undefined,
+      category: formData.category,
+      notes: formData.notes?.trim() || "",
     };
 
     if (
       !transactionData.title ||
       !transactionData.amount ||
-      !transactionData.categoryId
+      !transactionData.category
     ) {
       alert("Please fill in all required fields");
       return;
@@ -98,6 +54,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     if (transactionData.amount <= 0) {
       alert("Amount must be greater than 0");
       return;
+    }
+
+    if (transactionToEdit) {
+      onEdit(transactionData);
+    } else {
+      onSave(transactionData);
     }
 
     onSave(transactionData);
@@ -117,10 +79,22 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     setFormData((prev) => ({ ...prev, type: newType }));
   };
 
-  const renderCategoryOptions = () => {
-    const filteredCategories = getFilteredCategories();
+  const {
+    data: categories,
+    isPending,
+    error,
+  } = useQuery(getCategoriesQueryOptions());
 
-    return filteredCategories.map((category) => {
+  if (isPending) {
+    return <></>;
+  }
+
+  if (error) {
+    return <></>;
+  }
+
+  const renderCategoryOptions = () => {
+    return categories.map((category) => {
       return (
         <option key={category.id} value={category.id}>
           {category.name}
@@ -198,7 +172,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           <select
             id="categoryId"
             name="categoryId"
-            value={formData.categoryId}
+            value={formData.category}
             onChange={handleChange}
             required
           >
@@ -225,7 +199,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           Cancel
         </button>
         <button type="submit" className="btn-primary">
-          {editingTransactionId ? "Update" : "Add"} Transaction
+          {transactionToEdit ? "Update" : "Add"} Transaction
         </button>
       </div>
     </form>

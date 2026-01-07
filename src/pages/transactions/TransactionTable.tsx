@@ -9,7 +9,7 @@ import "./TransactionTable.css";
 interface TransactionTableProps {
   transactions: Transaction[];
   categories: Category[];
-  onEdit: (id: string) => void;
+  onEdit: (t: Transaction) => void;
   onDelete: (id: string) => void;
   isMobile: boolean;
 }
@@ -22,7 +22,9 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   isMobile,
 }) => {
   const renderDesktopRow = (transaction: Transaction) => {
-    const category = categories.find((c) => c.id === transaction.category);
+    const category = categories.find(
+      (c) => c.id === parseInt(transaction.category)
+    );
     const iconName = getCategoryIcon(category?.name || "default");
     const color = getCategoryColor(category?.name || "default");
     const Icon = getLucideIcon(iconName);
@@ -47,11 +49,11 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         </td>
         <td className={`amount ${transaction.type}`}>
           {transaction.type === "income" ? "+" : "-"}
-          {formatCurrency(parseInt(transaction.amount))}
+          {formatCurrency(transaction.amount)}
         </td>
         <td>
           <div className="table-actions">
-            <button className="btn-icon" onClick={() => onEdit(transaction.id)}>
+            <button className="btn-icon" onClick={() => onEdit(transaction)}>
               <Edit size={16} />
             </button>
             <button
@@ -67,7 +69,9 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   const renderMobileCard = (transaction: Transaction) => {
-    const category = categories.find((c) => c.id === transaction.category);
+    const category = categories.find(
+      (c) => c.id === parseInt(transaction.category)
+    );
     const iconName = getCategoryIcon(category?.name || "default");
     const color = getCategoryColor(category?.name || "default");
     const Icon = getLucideIcon(iconName);
@@ -86,7 +90,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
           <div className={`transaction-amount ${transaction.type}`}>
             {transaction.type === "income" ? "+" : "-"}
-            {formatCurrency(parseInt(transaction.amount))}
+            {formatCurrency(transaction.amount)}
           </div>
         </div>
         {transaction.notes && (
@@ -95,7 +99,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
         )}
         <div className="card-actions">
-          <button className="btn-icon" onClick={() => onEdit(transaction.id)}>
+          <button className="btn-icon" onClick={() => onEdit(transaction)}>
             <Edit size={16} />
             <span>Edit</span>
           </button>

@@ -62,7 +62,10 @@ const DashboardView = () => {
       <StatsCards stats={stats} />
 
       <div className="content-grid">
-        <SpendingChart onYearChange={setSelectedYear} />
+        <SpendingChart
+          transactions={transactions.data}
+          onYearChange={setSelectedYear}
+        />
 
         <RecentTransactions transactions={recentTransactions} />
 

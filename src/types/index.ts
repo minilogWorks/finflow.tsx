@@ -10,7 +10,7 @@ export type TransactionType = "expense" | "income";
 export interface Transaction {
   id: string;
   title: string;
-  amount: string;
+  amount: number;
   type: TransactionType;
   category: string;
   subcategoryId?: string;
@@ -25,24 +25,11 @@ export interface Transaction {
 export type CategoryType = "expense" | "income";
 
 export interface Category {
-  id: string;
+  id: number;
   name: string;
-  type: CategoryType;
-  color: string;
-  icon: string; // Add this line
-  isCustom: boolean;
-}
-export interface Category {
-  id: string;
-  name: string;
-  type: TransactionType;
-  icon: string;
-  color: string;
-  isCustom: boolean;
-  parentId?: string;
-  subcategories?: Category[];
-  isFavorite?: boolean;
-  // Removed: budget?: number;
+  isCustom?: boolean;
+  icon?: string;
+  color?: string;
 }
 
 export interface User {

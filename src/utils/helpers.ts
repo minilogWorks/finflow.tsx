@@ -10,11 +10,11 @@ export const calculateYearlyStats = (
 ): FinancialStats => {
   const totalIncome = transactions
     .filter((t) => t.type.toLowerCase() === "income")
-    .reduce((sum, t) => sum + parseInt(t.amount), 0);
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const totalExpense = transactions
     .filter((t) => t.type.toLowerCase() === "expense")
-    .reduce((sum, t) => sum + parseInt(t.amount), 0);
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const netBalance = totalIncome - totalExpense;
   const savingsRate = totalIncome > 0 ? (netBalance / totalIncome) * 100 : 0;
@@ -24,7 +24,7 @@ export const calculateYearlyStats = (
   );
   const biggestExpense =
     expenseTransactions.length > 0
-      ? Math.max(...expenseTransactions.map((t) => parseInt(t.amount)))
+      ? Math.max(...expenseTransactions.map((t) => t.amount))
       : 0;
 
   const averageDailySpend =
@@ -42,7 +42,6 @@ export const calculateYearlyStats = (
     transactionCount: transactions.length, // This should also use yearlyTransactions
   };
 
-  console.log(financialStats);
   return financialStats;
 };
 
@@ -61,22 +60,19 @@ export const getYearlyTopCategories = (
   limit: number = 5
 ): TopCategory[] => {
   const totalExpense = expenseTransactions.reduce(
-    (sum, t) => sum + parseInt(t.amount),
+    (sum, t) => sum + t.amount,
     0
   );
 
   const categoryMap = new Map<string, number>();
   expenseTransactions.forEach((transaction) => {
     const current = categoryMap.get(transaction.category) || 0;
-    categoryMap.set(
-      transaction.category,
-      current + parseInt(transaction.amount)
-    );
+    categoryMap.set(transaction.category, current + transaction.amount);
   });
 
   return Array.from(categoryMap.entries())
     .map(([categoryId, amount]) => {
-      const category = categories.find((c) => c.id === categoryId);
+      const category = categories.find((c) => c.id === parseInt(categoryId));
       if (!category) return null;
 
       return {

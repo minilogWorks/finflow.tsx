@@ -1,37 +1,46 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { Category } from "../../types";
 import CategoryCard from "./CategoryCard";
 import AddCategoryModal from "./AddCategoryModal";
-import { StorageService } from "../../services/StorageService";
-import { generateId } from "../../utils/helpers";
 import "./CategoriesView.css";
+import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
+import { useQueries } from "@tanstack/react-query";
+import { getTransactionsQueryOptions } from "../../queryOptions/getTransactionsQueryOptions";
+import Loader from "../../components/shared/Loader";
 
-interface CategoriesViewProps {
-  categories: Category[];
-  onCategoriesChange: (categories: Category[]) => void;
-}
-
-const CategoriesView: React.FC<CategoriesViewProps> = ({
-  categories,
-  onCategoriesChange,
-}) => {
-  const [activeTab, setActiveTab] = useState<
-    "all" | "custom"
-  >("all");
+const CategoriesView: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<"all" | "custom">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<
     Category | undefined
   >();
 
-  const customCategories = categories.filter((c) => c.isCustom);
+  const [transactions, categories] = useQueries({
+    queries: [getTransactionsQueryOptions(), getCategoriesQueryOptions()],
+  });
+
+  // TODO: Clean up isPending and error states
+  if (transactions.isPending || categories.isPending) {
+    return <Loader />;
+  }
+
+  if (transactions.error || categories.error) {
+    return (
+      <>
+        {transactions.error && transactions.error.message}
+        {categories.error && categories.error.message}
+      </>
+    );
+  }
+  const customCategories = categories.data.filter((c) => c.isCustom);
 
   const getFilteredCategories = () => {
     switch (activeTab) {
       case "custom":
         return customCategories;
       default:
-        return categories;
+        return categories.data;
     }
   };
 
@@ -45,50 +54,19 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this category? This will also delete all transactions in this category."
-      )
-    ) {
-      return;
-    }
+  // const handleDeleteCategory = (categoryId: string) => {
+  //   if (
+  //     !window.confirm(
+  //       "Are you sure you want to delete this category? This will also delete all transactions in this category."
+  //     )
+  //   ) {
+  //     return;
+  //   }
+  // };
 
-    // Delete category from categories
-    const updatedCategories = categories.filter((c) => c.id !== categoryId);
+  // const handleSaveCategory = (categoryData: Omit<Category, "id">) => {
 
-    // Delete transactions associated with this category
-    const transactions = StorageService.getTransactions();
-    const updatedTransactions = transactions.filter(
-      (t) => t.category !== categoryId
-    );
-
-    // Update storage
-    StorageService.saveTransactions(updatedTransactions);
-    onCategoriesChange(updatedCategories);
-  };
-
-  const handleSaveCategory = (categoryData: Omit<Category, "id">) => {
-    let updatedCategories: Category[];
-
-    if (editingCategory) {
-      // Update existing category
-      updatedCategories = categories.map((c) =>
-        c.id === editingCategory.id
-          ? { ...categoryData, id: editingCategory.id }
-          : c
-      );
-    } else {
-      // Add new category
-      const newCategory: Category = {
-        ...categoryData,
-        id: generateId(),
-      };
-      updatedCategories = [...categories, newCategory];
-    }
-
-    onCategoriesChange(updatedCategories);
-  };
+  // };
 
   return (
     <div className="categories-view">
@@ -119,7 +97,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({
             key={category.id}
             category={category}
             onEdit={handleEditCategory}
-            onDelete={handleDeleteCategory}
+            onDelete={() => {}}
           />
         ))}
       </div>
@@ -127,7 +105,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({
       <AddCategoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveCategory}
+        onSave={() => {}}
         editingCategory={editingCategory}
       />
     </div>

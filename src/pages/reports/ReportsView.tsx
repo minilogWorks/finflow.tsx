@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { Download, RefreshCw, ChevronDown, Calendar } from "lucide-react";
-import { FinancialStats } from "../../types";
-import { StorageService } from "../../services/StorageService";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,6 +15,11 @@ import {
 } from "chart.js";
 import { Line, Doughnut, Bar } from "react-chartjs-2";
 import "./ReportsView.css";
+import { useQueries } from "@tanstack/react-query";
+import { getTransactionsQueryOptions } from "../../queryOptions/getTransactionsQueryOptions";
+import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
+import Loader from "../../components/shared/Loader";
+import { calculateYearlyStats } from "../../utils/helpers";
 
 // Register ChartJS components
 ChartJS.register(
@@ -32,29 +35,30 @@ ChartJS.register(
   Filler
 );
 
-export interface ReportsViewProps {
-  stats: FinancialStats;
-}
-
-const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
+const ReportsView: React.FC = () => {
   const [generatedAt, setGeneratedAt] = useState<Date | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<
     "month" | "quarter" | "year"
   >("month");
 
-  const transactions = StorageService.getTransactions();
-  const categories = StorageService.getCategories();
+  const [transactions, categories] = useQueries({
+    queries: [getTransactionsQueryOptions(), getCategoriesQueryOptions()],
+  });
 
   // Process data for charts
   const chartData = useMemo(() => {
+    if (!transactions.data || !categories.data) {
+      return;
+    }
+
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
     // Get transactions for the selected period
     const filterTransactionsByPeriod = () => {
-      return transactions.filter((t) => {
+      return transactions.data.filter((t) => {
         const tDate = new Date(t.date);
         const tYear = tDate.getFullYear();
         const tMonth = tDate.getMonth();
@@ -82,17 +86,17 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
       const year = date.getFullYear();
       monthLabels.push(date.toLocaleDateString("en-US", { month: "short" }));
 
-      const monthTransactions = transactions.filter((t) => {
+      const monthTransactions = transactions.data.filter((t) => {
         const tDate = new Date(t.date);
         return tDate.getMonth() === month && tDate.getFullYear() === year;
       });
 
       const income = monthTransactions
         .filter((t) => t.type === "income")
-        .reduce((sum, t) => sum + parseInt(t.amount), 0);
+        .reduce((sum, t) => sum + t.amount, 0);
       const expense = monthTransactions
         .filter((t) => t.type === "expense")
-        .reduce((sum, t) => sum + parseInt(t.amount), 0);
+        .reduce((sum, t) => sum + t.amount, 0);
 
       monthlyData.push({
         income,
@@ -107,12 +111,12 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
       .filter((t) => t.type === "expense")
       .forEach((t) => {
         const current = categoryMap.get(t.category) || 0;
-        categoryMap.set(t.category, current + parseInt(t.amount));
+        categoryMap.set(t.category, current + t.amount);
       });
 
     const categoryData = Array.from(categoryMap.entries())
       .map(([catId, amount]) => {
-        const cat = categories.find((c) => c.id === catId);
+        const cat = categories.data.find((c) => c.id === parseInt(catId));
         return {
           name: cat?.name || "Unknown",
           amount,
@@ -124,6 +128,22 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
 
     return { monthlyData, categoryData };
   }, [transactions, categories, selectedPeriod]);
+
+  // TODO: Clean up isPending and error states
+  if (transactions.isPending || categories.isPending) {
+    return <Loader />;
+  }
+
+  if (transactions.error || categories.error) {
+    return (
+      <>
+        {transactions.error && transactions.error.message}
+        {categories.error && categories.error.message}
+      </>
+    );
+  }
+
+  const stats = calculateYearlyStats(transactions.data);
 
   // Summary data
   const summary = [
@@ -170,8 +190,8 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
         version: 1,
       },
       summary: summary.map((s) => ({ label: s.label, value: s.value })),
-      monthlyData: chartData.monthlyData,
-      categoryData: chartData.categoryData,
+      monthlyData: chartData!.monthlyData,
+      categoryData: chartData!.categoryData,
     };
   };
 
@@ -210,11 +230,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
 
   // Chart configurations
   const monthlyChartData = {
-    labels: chartData.monthlyData.map((d) => d.month),
+    labels: chartData!.monthlyData.map((d) => d.month),
     datasets: [
       {
         label: "Income",
-        data: chartData.monthlyData.map((d) => d.income),
+        data: chartData!.monthlyData.map((d) => d.income),
         borderColor: "#10b981",
         backgroundColor: "rgba(16, 185, 129, 0.1)",
         fill: true,
@@ -222,7 +242,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
       },
       {
         label: "Expense",
-        data: chartData.monthlyData.map((d) => d.expense),
+        data: chartData!.monthlyData.map((d) => d.expense),
         borderColor: "#ef4444",
         backgroundColor: "rgba(239, 68, 68, 0.1)",
         fill: true,
@@ -232,11 +252,11 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
   };
 
   const categoryChartData = {
-    labels: chartData.categoryData.map((d) => d.name),
+    labels: chartData!.categoryData.map((d) => d.name),
     datasets: [
       {
-        data: chartData.categoryData.map((d) => d.amount),
-        backgroundColor: chartData.categoryData.map((d) => d.color),
+        data: chartData!.categoryData.map((d) => d.amount),
+        backgroundColor: chartData!.categoryData.map((d) => d.color),
         borderWidth: 2,
         borderColor: "#fff",
       },
@@ -451,7 +471,7 @@ const ReportsView: React.FC<ReportsViewProps> = ({ stats }) => {
         <div className="report-card chart-card">
           <h3>Category Breakdown</h3>
           <div className="chart-container">
-            {chartData.categoryData.length > 0 ? (
+            {chartData!.categoryData.length > 0 ? (
               <Doughnut data={categoryChartData} options={doughnutOptions} />
             ) : (
               <div className="chart-placeholder">

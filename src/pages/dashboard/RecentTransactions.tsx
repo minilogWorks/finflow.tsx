@@ -9,7 +9,11 @@ import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getCategoryByIdQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
 
-const RecentTransactionItem = (transaction: Transaction) => {
+const RecentTransactionItem = ({
+  transaction,
+}: {
+  transaction: Transaction;
+}) => {
   const { data: category, isPending } = useQuery(
     getCategoryByIdQueryOptions(parseInt(transaction.category))
   );
@@ -35,7 +39,7 @@ const RecentTransactionItem = (transaction: Transaction) => {
       </div>
       <div className={`transaction-amount ${transaction.type}`}>
         {transaction.type.toLowerCase() === "income" ? "+" : "-"}
-        {formatCurrency(parseInt(transaction.amount))}
+        {formatCurrency(transaction.amount)}
       </div>
     </div>
   );
@@ -60,7 +64,12 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
       </div>
       <div className="transactions-list">
         {transactions.length > 0 ? (
-          transactions.map(RecentTransactionItem)
+          transactions.map((transaction) => (
+            <RecentTransactionItem
+              transaction={transaction}
+              key={transaction.id}
+            />
+          ))
         ) : (
           <p className="empty-state">No transactions yet</p>
         )}
