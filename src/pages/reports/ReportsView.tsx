@@ -38,9 +38,10 @@ ChartJS.register(
 const ReportsView: React.FC = () => {
   const [generatedAt, setGeneratedAt] = useState<Date | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<
-    "month" | "quarter" | "year"
-  >("month");
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
+  const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
 
   const [transactions, categories] = useQueries({
     queries: [getTransactionsQueryOptions(), getCategoriesQueryOptions()],
@@ -56,39 +57,22 @@ const ReportsView: React.FC = () => {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    // Get transactions for the selected period
-    const filterTransactionsByPeriod = () => {
-      return transactions.data.filter((t) => {
-        const tDate = new Date(t.date);
-        const tYear = tDate.getFullYear();
-        const tMonth = tDate.getMonth();
+    // Get transactions for the selected year
+    const periodTransactions = transactions.data.filter((t) => {
+      const tDate = new Date(t.date);
+      return tDate.getFullYear() === selectedYear;
+    });
 
-        if (selectedPeriod === "month") {
-          return tYear === currentYear && tMonth === currentMonth;
-        } else if (selectedPeriod === "quarter") {
-          const currentQuarter = Math.floor(currentMonth / 3);
-          const tQuarter = Math.floor(tMonth / 3);
-          return tYear === currentYear && tQuarter === currentQuarter;
-        } else {
-          return tYear === currentYear;
-        }
-      });
-    };
-
-    const periodTransactions = filterTransactionsByPeriod();
-
-    // Monthly spending trend (last 6 months)
+    // Monthly spending trend for selected year (all 12 months)
     const monthlyData = [];
     const monthLabels = [];
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(currentYear, currentMonth - i, 1);
-      const month = date.getMonth();
-      const year = date.getFullYear();
+    for (let month = 0; month < 12; month++) {
+      const date = new Date(selectedYear, month, 1);
       monthLabels.push(date.toLocaleDateString("en-US", { month: "short" }));
 
-      const monthTransactions = transactions.data.filter((t) => {
+      const monthTransactions = periodTransactions.filter((t) => {
         const tDate = new Date(t.date);
-        return tDate.getMonth() === month && tDate.getFullYear() === year;
+        return tDate.getMonth() === month;
       });
 
       const income = monthTransactions
@@ -127,7 +111,7 @@ const ReportsView: React.FC = () => {
       .slice(0, 8);
 
     return { monthlyData, categoryData };
-  }, [transactions, categories, selectedPeriod]);
+  }, [transactions, categories, selectedYear]);
 
   // TODO: Clean up isPending and error states
   if (transactions.isPending || categories.isPending) {
@@ -143,7 +127,13 @@ const ReportsView: React.FC = () => {
     );
   }
 
-  const stats = calculateYearlyStats(transactions.data);
+  // Filter transactions for selected year
+  const yearTransactions = transactions.data.filter((t) => {
+    const tDate = new Date(t.date);
+    return tDate.getFullYear() === selectedYear;
+  });
+
+  const stats = calculateYearlyStats(yearTransactions);
 
   // Summary data
   const summary = [
@@ -186,7 +176,7 @@ const ReportsView: React.FC = () => {
     return {
       meta: {
         generatedAt: generatedAt ? generatedAt.toISOString() : null,
-        period: selectedPeriod,
+        year: selectedYear,
         version: 1,
       },
       summary: summary.map((s) => ({ label: s.label, value: s.value })),
@@ -221,8 +211,8 @@ const ReportsView: React.FC = () => {
     const meta = generatedAt
       ? `generatedAt,${generatedAt.toISOString()}`
       : "generatedAt,";
-    const period = `period,${selectedPeriod}`;
-    const csv = [meta, period, "", ...lines].join("\n");
+    const yearLine = `year,${selectedYear}`;
+    const csv = [meta, yearLine, "", ...lines].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     download(blob, `report-${Date.now()}.csv`);
     setExportOpen(false);
@@ -379,22 +369,81 @@ const ReportsView: React.FC = () => {
     },
   };
 
+  // Get available years from transactions
+  const availableYears = useMemo(() => {
+    if (!transactions.data) return [];
+    const years = new Set<number>();
+    transactions.data.forEach((t) => {
+      years.add(new Date(t.date).getFullYear());
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [transactions.data]);
+
+  const handlePreviousYear = () => {
+    setSelectedYear((prev) => prev - 1);
+  };
+
+  const handleNextYear = () => {
+    setSelectedYear((prev) => prev + 1);
+  };
+
+  const currentYear = new Date().getFullYear();
+  const canGoNext = selectedYear < currentYear;
+
   return (
     <div className="reports-view">
       <div className="view-header">
         <h2>Reports & Analytics</h2>
         <div className="header-actions" style={{ position: "relative" }}>
-          <div className="period-selector">
-            <Calendar size={18} />
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value as any)}
-              className="period-select"
+          <div className="year-selector">
+            <button
+              className="year-nav-btn"
+              onClick={handlePreviousYear}
+              title="Previous Year"
             >
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-            </select>
+              <ChevronDown size={18} style={{ transform: "rotate(90deg)" }} />
+            </button>
+            <div
+              className="year-display"
+              onClick={() => setYearDropdownOpen(!yearDropdownOpen)}
+            >
+              <Calendar size={18} />
+              <span className="year-text">{selectedYear}</span>
+              <ChevronDown
+                size={16}
+                className={`year-chevron ${yearDropdownOpen ? "open" : ""}`}
+              />
+            </div>
+            <button
+              className="year-nav-btn"
+              onClick={handleNextYear}
+              disabled={!canGoNext}
+              title="Next Year"
+            >
+              <ChevronDown size={18} style={{ transform: "rotate(-90deg)" }} />
+            </button>
+            {yearDropdownOpen && (
+              <div className="year-dropdown">
+                {availableYears.length > 0 ? (
+                  availableYears.map((year) => (
+                    <button
+                      key={year}
+                      className={`year-option ${
+                        year === selectedYear ? "selected" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedYear(year);
+                        setYearDropdownOpen(false);
+                      }}
+                    >
+                      {year}
+                    </button>
+                  ))
+                ) : (
+                  <div className="year-option disabled">No data available</div>
+                )}
+              </div>
+            )}
           </div>
           <button className="btn-primary" onClick={handleGenerate}>
             <RefreshCw size={18} />
