@@ -1,6 +1,109 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import "./Auth.css";
+
+type CurrencyOption = {
+  code: string;
+  label: string;
+  symbol: string;
+};
+
+const currencyOptions: CurrencyOption[] = [
+  { code: "USD", label: "US Dollar", symbol: "$" },
+  { code: "EUR", label: "Euro", symbol: "€" },
+  { code: "GBP", label: "British Pound", symbol: "£" },
+  { code: "CAD", label: "Canadian Dollar", symbol: "$" },
+  { code: "AUD", label: "Australian Dollar", symbol: "$" },
+  { code: "JPY", label: "Japanese Yen", symbol: "¥" },
+];
+
+type CurrencySelectProps = {
+  value: string;
+  disabled?: boolean;
+  onChange: (code: string) => void;
+};
+
+const CurrencySelect: React.FC<CurrencySelectProps> = ({
+  value,
+  disabled,
+  onChange,
+}) => {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const selected = currencyOptions.find((opt) => opt.code === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
+  return (
+    <div className="custom-select" ref={wrapperRef}>
+      <button
+        type="button"
+        className="custom-select__button"
+        onClick={() => setOpen((prev) => !prev)}
+        disabled={disabled}
+      >
+        <span className="custom-select__value">
+          <i data-lucide="wallet"></i>
+          <span className="custom-select__label">
+            {selected
+              ? `${selected.symbol} ${selected.code}`
+              : "Select currency"}
+          </span>
+          {selected && (
+            <small className="custom-select__hint">{selected.label}</small>
+          )}
+        </span>
+        <i
+          className={`custom-select__chevron ${open ? "open" : ""}`}
+          data-lucide="chevron-down"
+        ></i>
+      </button>
+
+      {open && (
+        <div className="custom-select__menu">
+          {currencyOptions.map((option) => (
+            <button
+              type="button"
+              key={option.code}
+              className={`custom-select__option ${
+                option.code === value ? "selected" : ""
+              }`}
+              onClick={() => {
+                onChange(option.code);
+                setOpen(false);
+              }}
+              disabled={disabled}
+            >
+              <span className="custom-select__option-main">
+                <span className="custom-select__symbol">{option.symbol}</span>
+                <span className="custom-select__code">{option.code}</span>
+              </span>
+              <span className="custom-select__description">{option.label}</span>
+              {option.code === value && (
+                <i className="custom-select__check" data-lucide="check"></i>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -8,13 +111,16 @@ const Register: React.FC = () => {
     password: "",
     confirmPassword: "",
     name: "",
+    currency: "USD",
   });
   const [error] = useState("");
   const [success] = useState("");
   const [loading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
@@ -85,19 +191,35 @@ const Register: React.FC = () => {
         )}
 
         <form onSubmit={() => {}} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="name">
-              <i data-lucide="user-plus"></i>
-              Display Name (Optional)
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="What should we call you?"
-              disabled={loading}
-            />
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="name">
+                <i data-lucide="user-plus"></i>
+                Display Name (Optional)
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="What should we call you?"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="currency">
+                <i data-lucide="wallet"></i>
+                Preferred Currency
+              </label>
+              <CurrencySelect
+                value={formData.currency}
+                onChange={(code) =>
+                  setFormData({ ...formData, currency: code })
+                }
+                disabled={loading}
+              />
+            </div>
           </div>
 
           <div className="form-group">
@@ -119,37 +241,39 @@ const Register: React.FC = () => {
             </small>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">
-              <i data-lucide="lock"></i>
-              Password *
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Create a password"
-              required
-              disabled={loading}
-            />
-            <small className="hint">At least 6 characters</small>
-          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="password">
+                <i data-lucide="lock"></i>
+                Password *
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Create a password"
+                required
+                disabled={loading}
+              />
+              <small className="hint">At least 6 characters</small>
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">
-              <i data-lucide="lock"></i>
-              Confirm Password *
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm your password"
-              required
-              disabled={loading}
-            />
+            <div className="form-group">
+              <label htmlFor="confirmPassword">
+                <i data-lucide="lock"></i>
+                Confirm Password *
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm your password"
+                required
+                disabled={loading}
+              />
+            </div>
           </div>
 
           <button
