@@ -24,6 +24,20 @@
   margin-bottom: 20px;
 }
 
+.loader-2-container {
+  display: grid;
+  place-items: center;
+}
+
+.loader-2 {
+  width: 35px;
+  height: 35px;
+  border: 3px solid #e9ecef;
+  border-top-color: #4361ee;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

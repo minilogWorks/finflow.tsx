@@ -26,7 +26,6 @@ export class StorageService {
     if (data) {
       const tokens = JSON.parse(data);
       tokens.accessToken = newAccessToken;
-      console.log(tokens);
       localStorage.setItem(STORAGE_KEYS.TOKENS, JSON.stringify(tokens));
     }
   }

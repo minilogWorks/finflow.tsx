@@ -1,13 +1,23 @@
 import React, { useState } from "react";
-import { Transaction, TransactionType } from "../../types";
+import {
+  AddTransaction,
+  EditTransaction,
+  Transaction,
+  TransactionType,
+} from "../../types";
 import "./TransactionForm.css";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
+import {
+  addTransactionMutationOptions,
+  editTransactionMutationOptions,
+} from "../../queryOptions/transactionsMutationOptions";
+import { useAuth } from "../../context/AuthContext";
 
 interface TransactionFormProps {
   transactionToEdit: Transaction | null;
-  onSave: (transactionData: Partial<Transaction>) => void;
-  onEdit: (transactionToEdit: Partial<Transaction>) => void;
+  onSave: (transactionData: AddTransaction) => void;
+  onEdit: (transactionToEdit: AddTransaction) => void;
   onCancel: () => void;
 }
 
@@ -17,6 +27,30 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   onEdit,
   onCancel,
 }) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const {
+    mutate: addTransactionMutation,
+    isPending: addTransactionPending,
+    error: addTransactionError,
+  } = useMutation({
+    ...addTransactionMutationOptions(),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  });
+
+  const {
+    mutate: editTransactionMutation,
+    isPending: editTransactionPending,
+    error: editTransactionError,
+  } = useMutation({
+    ...editTransactionMutationOptions(),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  });
+
   const [formData, setFormData] = useState({
     title: transactionToEdit ? transactionToEdit.title : "",
     amount: transactionToEdit ? transactionToEdit.amount : 0,
@@ -33,36 +67,35 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const transactionData: Partial<Transaction> = {
-      title: formData.title.trim(),
-      amount: formData.amount,
-      type: formData.type,
-      date: formData.date,
-      category: formData.category,
-      notes: formData.notes?.trim() || "",
-    };
-
-    if (
-      !transactionData.title ||
-      !transactionData.amount ||
-      !transactionData.category
-    ) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
-    if (transactionData.amount <= 0) {
-      alert("Amount must be greater than 0");
-      return;
-    }
-
     if (transactionToEdit) {
-      onEdit(transactionData);
-    } else {
-      onSave(transactionData);
-    }
+      const transactionData: EditTransaction = {
+        title: formData.title.trim(),
+        amount: formData.amount,
+        type: formData.type.charAt(0).toUpperCase() + formData.type.slice(1),
+        date: formData.date,
+        category: formData.category,
+        notes: formData.notes?.trim() || "",
+      };
 
-    onSave(transactionData);
+      editTransactionMutation({
+        transactionId: transactionToEdit.id,
+        fieldsToEdit: transactionData,
+      });
+      onCancel();
+    } else {
+      const transactionData: AddTransaction = {
+        title: formData.title.trim(),
+        amount: formData.amount,
+        type: formData.type.charAt(0).toUpperCase() + formData.type.slice(1),
+        date: formData.date,
+        category: formData.category,
+        notes: formData.notes?.trim() || "",
+        user: user?.id.toString() ?? "",
+      };
+
+      addTransactionMutation(transactionData);
+      onCancel();
+    }
   };
 
   const handleChange = (
@@ -78,6 +111,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     const newType = e.target.value as TransactionType;
     setFormData((prev) => ({ ...prev, type: newType }));
   };
+
+  const isMutationLoading = addTransactionPending || editTransactionPending;
+
+  const isMutationError =
+    addTransactionError !== null || editTransactionError !== null;
 
   const {
     data: categories,
@@ -102,6 +140,25 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       );
     });
   };
+
+  if (isMutationLoading) {
+    return (
+      <div className="loader-2-container">
+        <div className="loader-2"></div>
+      </div>
+    );
+  }
+
+  if (isMutationError) {
+    {
+      /* TODO: Edit the error message when adding/editing transaction fails */
+    }
+    return (
+      <div>
+        <p>There is an error</p>
+      </div>
+    );
+  }
 
   return (
     <form className="transaction-form" onSubmit={handleSubmit}>
@@ -173,10 +230,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             id="categoryId"
             name="categoryId"
             value={formData.category}
-            onChange={handleChange}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, category: e.target.value }))
+            }
             required
           >
-            <option value="">Select a category</option>
+            <option value="" disabled>
+              Select a category
+            </option>
             {renderCategoryOptions()}
           </select>
         </div>

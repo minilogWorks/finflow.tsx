@@ -4,12 +4,13 @@ import TransactionTable from "./TransactionTable";
 import FilterModal from "./FilterModal";
 import "./TransactionsView.css";
 import { StorageService } from "../../services/StorageService";
-import { useQueries } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { getTransactionsQueryOptions } from "../../queryOptions/getTransactionsQueryOptions";
 import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
 import Modal from "../../components/shared/Modal";
 import TransactionForm from "../../components/shared/TransactionForm";
 import { Transaction } from "../../types";
+import { deleteTransactionMutationOptions } from "../../queryOptions/transactionsMutationOptions";
 
 interface FilterState {
   month: string;
@@ -38,6 +39,19 @@ const TransactionsView: React.FC = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: deleteTransacationMutation,
+    isPending: deleteTransactionIsPending,
+    error: deleteTransactionError,
+  } = useMutation({
+    ...deleteTransactionMutationOptions(),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+  });
+
   const addTransaction = () => {
     setTransactionToEdit(null);
     setShowModal(true);
@@ -49,12 +63,15 @@ const TransactionsView: React.FC = () => {
   };
 
   const onDeleteTransaction = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this transaction?")) {
-      if (StorageService.deleteTransaction(id)) {
-        alert("Transaction deleted successfully!");
-        window.location.reload();
-      }
-    }
+    // TODO: Properly deal with confirmation for transacton deletion
+
+    // if (window.confirm("Are you sure you want to delete this transaction?")) {
+    //   if (StorageService.deleteTransaction(id)) {
+    //     alert("Transaction deleted successfully!");
+    //     window.location.reload();
+    //   }
+    // }
+    deleteTransacationMutation(id);
   };
 
   const handleExport = () => {

@@ -24,6 +24,15 @@ export interface Transaction {
   createdAt: string;
 }
 
+export type AddTransaction = Partial<Omit<Transaction, "type">> & {
+  user: string;
+  type: string;
+};
+
+export type EditTransaction = Partial<Omit<Transaction, "type">> & {
+  type: string;
+};
+
 export type CategoryType = "expense" | "income";
 
 export interface Category {
