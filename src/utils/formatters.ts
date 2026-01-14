@@ -2,7 +2,35 @@ export const formatCurrency = (
   amount: number,
   currency: string = "USD"
 ): string => {
-  return new Intl.NumberFormat("en-US", {
+  // Map currencies to their appropriate locales for better symbol display
+  const localeMap: Record<string, string> = {
+    USD: "en-US",
+    EUR: "de-DE",
+    GBP: "en-GB",
+    CAD: "en-CA",
+    AUD: "en-AU",
+    JPY: "ja-JP",
+    GHS: "en-GH",
+    NGN: "en-NG",
+    ZAR: "en-ZA",
+    KES: "en-KE",
+    EGP: "ar-EG",
+    INR: "en-IN",
+    CNY: "zh-CN",
+    CHF: "de-CH",
+    NZD: "en-NZ",
+    SEK: "sv-SE",
+    NOK: "nb-NO",
+    DKK: "da-DK",
+    SGD: "en-SG",
+    HKD: "zh-HK",
+    MXN: "es-MX",
+    BRL: "pt-BR",
+  };
+
+  const locale = localeMap[currency] || "en-US";
+
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currency,
     minimumFractionDigits: 2,

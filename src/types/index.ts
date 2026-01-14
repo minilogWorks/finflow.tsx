@@ -3,6 +3,8 @@ export interface IUser {
   username: string;
   email: string;
   isStaff: boolean;
+  name?: string;
+  currency?: string;
 }
 
 export type TransactionType = "expense" | "income";

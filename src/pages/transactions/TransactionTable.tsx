@@ -4,6 +4,7 @@ import { Transaction, Category } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 import { getCategoryIcon, getCategoryColor } from "../../utils/formatters";
 import { getLucideIcon } from "../../utils/iconUtils";
+import { useAuth } from "../../context/AuthContext";
 import "./TransactionTable.css";
 
 interface TransactionTableProps {
@@ -21,6 +22,8 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   onDelete,
   isMobile,
 }) => {
+  const { user } = useAuth();
+  const currency = user?.currency || "USD";
   const renderDesktopRow = (transaction: Transaction) => {
     const category = categories.find(
       (c) => c.id === parseInt(transaction.category)
@@ -49,7 +52,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         </td>
         <td className={`amount ${transaction.type}`}>
           {transaction.type === "income" ? "+" : "-"}
-          {formatCurrency(transaction.amount)}
+          {formatCurrency(transaction.amount, currency)}
         </td>
         <td>
           <div className="table-actions">
@@ -90,7 +93,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
           </div>
           <div className={`transaction-amount ${transaction.type}`}>
             {transaction.type === "income" ? "+" : "-"}
-            {formatCurrency(transaction.amount)}
+            {formatCurrency(transaction.amount, currency)}
           </div>
         </div>
         {transaction.notes && (

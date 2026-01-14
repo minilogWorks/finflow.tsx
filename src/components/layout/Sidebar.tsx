@@ -7,6 +7,7 @@ import {
   PieChart,
   User,
   LogOut,
+  Settings,
 } from "lucide-react";
 import "./Sidebar.css";
 import { NavLink, useNavigate } from "react-router";
@@ -33,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
       path: "/categories",
     },
     { id: "reports", icon: BarChart, label: "Reports", path: "/reports" },
+    { id: "settings", icon: Settings, label: "Settings", path: "/settings" },
   ];
 
   const { logout } = useAuth();

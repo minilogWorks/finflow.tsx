@@ -15,6 +15,7 @@ interface AuthContextType {
   user: IUser | null;
   tokens: Tokens | null;
   login: (tokens: Tokens, user: IUser) => void;
+  updateUserProfile: (updates: Partial<IUser>) => void;
   logout: () => void;
 }
 
@@ -28,9 +29,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const tokens = StorageService.getTokens();
+    const savedUser = StorageService.getUser();
     if (tokens) {
       setTokens(tokens);
       setIsAuthenticated(true);
+      if (savedUser) {
+        setUser(savedUser);
+      }
     }
     setAuthLoading(false);
   }, []);
@@ -53,9 +58,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
   };
 
+  const updateUserProfile = (updates: Partial<IUser>) => {
+    setUser((prev) => {
+      const next = prev ? { ...prev, ...updates } : ({ ...updates } as IUser);
+      StorageService.saveUser(next);
+      return next;
+    });
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, authLoading, user, tokens, login, logout }}
+      value={{
+        isAuthenticated,
+        authLoading,
+        user,
+        tokens,
+        login,
+        updateUserProfile,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

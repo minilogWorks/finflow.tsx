@@ -9,6 +9,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ProtectedRoute from "./components/shared/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import UserSettingsView from "./pages/settings/UserSettingsView";
 
 export default function App() {
   const browserRouter = createBrowserRouter([
@@ -35,6 +36,10 @@ export default function App() {
         {
           path: "reports",
           element: <ReportsView />,
+        },
+        {
+          path: "settings",
+          element: <UserSettingsView />,
         },
       ],
     },

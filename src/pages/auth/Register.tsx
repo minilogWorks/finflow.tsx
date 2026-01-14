@@ -15,6 +15,22 @@ const currencyOptions: CurrencyOption[] = [
   { code: "CAD", label: "Canadian Dollar", symbol: "$" },
   { code: "AUD", label: "Australian Dollar", symbol: "$" },
   { code: "JPY", label: "Japanese Yen", symbol: "¥" },
+  { code: "GHS", label: "Ghanaian Cedi", symbol: "₵" },
+  { code: "NGN", label: "Nigerian Naira", symbol: "₦" },
+  { code: "ZAR", label: "South African Rand", symbol: "R" },
+  { code: "KES", label: "Kenyan Shilling", symbol: "KSh" },
+  { code: "EGP", label: "Egyptian Pound", symbol: "£" },
+  { code: "INR", label: "Indian Rupee", symbol: "₹" },
+  { code: "CNY", label: "Chinese Yuan", symbol: "¥" },
+  { code: "CHF", label: "Swiss Franc", symbol: "Fr" },
+  { code: "NZD", label: "New Zealand Dollar", symbol: "$" },
+  { code: "SEK", label: "Swedish Krona", symbol: "kr" },
+  { code: "NOK", label: "Norwegian Krone", symbol: "kr" },
+  { code: "DKK", label: "Danish Krone", symbol: "kr" },
+  { code: "SGD", label: "Singapore Dollar", symbol: "$" },
+  { code: "HKD", label: "Hong Kong Dollar", symbol: "$" },
+  { code: "MXN", label: "Mexican Peso", symbol: "$" },
+  { code: "BRL", label: "Brazilian Real", symbol: "R$" },
 ];
 
 type CurrencySelectProps = {

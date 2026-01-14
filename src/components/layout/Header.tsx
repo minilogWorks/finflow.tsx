@@ -3,6 +3,7 @@ import { formatCurrency } from "../../utils/formatters";
 import { FinancialStats } from "../../types";
 import "./Header.css";
 import { useLocation } from "react-router";
+import { useAuth } from "../../context/AuthContext";
 
 interface HeaderProps {
   stats: FinancialStats;
@@ -11,17 +12,21 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ stats, isMobile }) => {
   const { pathname } = useLocation();
+  const { user } = useAuth();
+  const userCurrency = user?.currency || "USD";
 
   const getViewTitle = (): string => {
     switch (pathname) {
       case "/":
-        return "Dashboard";
+        return "Overall Dashboard";
       case "/transactions":
         return "Transactions";
       case "/categories":
         return "Categories";
       case "/reports":
         return "Reports";
+      case "/settings":
+        return "Settings";
       default:
         return "FinFlow";
     }
@@ -37,6 +42,8 @@ const Header: React.FC<HeaderProps> = ({ stats, isMobile }) => {
         return "Organize your custom categories";
       case "/reports":
         return "Generate detailed reports";
+      case "/settings":
+        return "Manage your account and preferences";
       default:
         return "Personal Finance Manager";
     }
@@ -55,13 +62,13 @@ const Header: React.FC<HeaderProps> = ({ stats, isMobile }) => {
             <div className="stat">
               <span>Income</span>
               <strong style={{ color: "#00B894" }}>
-                {formatCurrency(stats.totalIncome)}
+                {formatCurrency(stats.totalIncome, userCurrency)}
               </strong>
             </div>
             <div className="stat">
               <span>Expenses</span>
               <strong style={{ color: "#FF6B6B" }}>
-                {formatCurrency(stats.totalExpense)}
+                {formatCurrency(stats.totalExpense, userCurrency)}
               </strong>
             </div>
             <div className="stat">
@@ -69,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ stats, isMobile }) => {
               <strong
                 style={{ color: stats.netBalance >= 0 ? "#4CAF50" : "#f72585" }}
               >
-                {formatCurrency(stats.netBalance)}
+                {formatCurrency(stats.netBalance, userCurrency)}
               </strong>
             </div>
           </div>

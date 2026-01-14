@@ -4,6 +4,7 @@ import { Category } from "../../types";
 import { StorageService } from "../../services/StorageService";
 import { formatCurrency } from "../../utils/formatters";
 import { categoryIcons } from "../../utils/categoryIcons"; // Import icon list
+import { useAuth } from "../../context/AuthContext";
 import "./CategoryCard.css";
 
 interface CategoryCardProps {
@@ -17,6 +18,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { user } = useAuth();
+  const currency = user?.currency || "USD";
   const transactions = StorageService.getTransactions().filter(
     (t) => parseInt(t.category) === category.id
   );
@@ -75,7 +78,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </div>
         <div className="stat">
           <span>Total</span>
-          <strong>{formatCurrency(totalSpent)}</strong>
+          <strong>{formatCurrency(totalSpent, currency)}</strong>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { TopCategory } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
 import { getCategoryIcon, getCategoryColor } from "../../utils/formatters";
 import { getLucideIcon } from "../../utils/iconUtils";
+import { useAuth } from "../../context/AuthContext";
 import "./TopCategories.css";
 
 interface TopCategoriesProps {
@@ -10,6 +11,9 @@ interface TopCategoriesProps {
 }
 
 const TopCategories: React.FC<TopCategoriesProps> = ({ categories }) => {
+  const { user } = useAuth();
+  const currency = user?.currency || "USD";
+
   if (categories.length === 0) {
     return (
       <div className="card">
@@ -43,7 +47,7 @@ const TopCategories: React.FC<TopCategoriesProps> = ({ categories }) => {
               </div>
               <div className="category-info">
                 <h4>{item.category.name}</h4>
-                <p>{formatCurrency(item.amount)}</p>
+                <p>{formatCurrency(item.amount, currency)}</p>
               </div>
               <div className="category-percentage">
                 <div className="progress-bar">

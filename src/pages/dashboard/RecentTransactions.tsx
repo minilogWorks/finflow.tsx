@@ -8,11 +8,14 @@ import "./RecentTransactions.css";
 import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { getCategoryByIdQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
+import { useAuth } from "../../context/AuthContext";
 
 const RecentTransactionItem = ({
   transaction,
+  currency,
 }: {
   transaction: Transaction;
+  currency: string;
 }) => {
   const { data: category, isPending } = useQuery(
     getCategoryByIdQueryOptions(parseInt(transaction.category))
@@ -39,7 +42,7 @@ const RecentTransactionItem = ({
       </div>
       <div className={`transaction-amount ${transaction.type}`}>
         {transaction.type.toLowerCase() === "income" ? "+" : "-"}
-        {formatCurrency(transaction.amount)}
+        {formatCurrency(transaction.amount, currency)}
       </div>
     </div>
   );
@@ -52,6 +55,9 @@ interface RecentTransactionsProps {
 const RecentTransactions: React.FC<RecentTransactionsProps> = ({
   transactions,
 }) => {
+  const { user } = useAuth();
+  const currency = user?.currency || "USD";
+
   return (
     <div className="card">
       <div className="card-header">
@@ -67,6 +73,7 @@ const RecentTransactions: React.FC<RecentTransactionsProps> = ({
           transactions.map((transaction) => (
             <RecentTransactionItem
               transaction={transaction}
+              currency={currency}
               key={transaction.id}
             />
           ))
