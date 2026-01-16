@@ -5,9 +5,10 @@ import CategoryCard from "./CategoryCard";
 import AddCategoryModal from "./AddCategoryModal";
 import "./CategoriesView.css";
 import { getCategoriesQueryOptions } from "../../queryOptions/getCategoriesQueryOptions";
-import { useQueries } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { getTransactionsQueryOptions } from "../../queryOptions/getTransactionsQueryOptions";
 import Loader from "../../components/shared/Loader";
+import { deleteCategoryMutationOptions } from "../../queryOptions/categoriesMutationOptions";
 
 const CategoriesView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"all" | "custom">("all");
@@ -16,8 +17,21 @@ const CategoriesView: React.FC = () => {
     Category | undefined
   >();
 
+  const queryClient = useQueryClient();
+
   const [transactions, categories] = useQueries({
     queries: [getTransactionsQueryOptions(), getCategoriesQueryOptions()],
+  });
+
+  const {
+    mutate: deleteQueryMutation,
+    isPending: deleteQueryIsPending,
+    error: deleteQueryError,
+  } = useMutation({
+    ...deleteCategoryMutationOptions(),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
   });
 
   // TODO: Clean up isPending and error states
@@ -43,6 +57,8 @@ const CategoriesView: React.FC = () => {
         return categories.data;
     }
   };
+
+  console.log({ categories: getFilteredCategories() });
 
   const handleAddCategory = () => {
     setEditingCategory(undefined);
@@ -97,7 +113,9 @@ const CategoriesView: React.FC = () => {
             key={category.id}
             category={category}
             onEdit={handleEditCategory}
-            onDelete={() => {}}
+            onDelete={() => {
+              deleteQueryMutation(category.id.toString());
+            }}
           />
         ))}
       </div>

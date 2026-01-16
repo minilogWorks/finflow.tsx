@@ -81,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
             <User size={20} />
           </div>
           <div className="user-info">
-            <h4>{user?.name || "User"}</h4>
+            <h4>{user?.username || "User"}</h4>
             <p>{user?.tier || "Free"} User</p>
           </div>
         </div>

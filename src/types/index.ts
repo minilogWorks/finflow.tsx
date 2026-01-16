@@ -38,10 +38,16 @@ export type CategoryType = "expense" | "income";
 export interface Category {
   id: number;
   name: string;
-  isCustom?: boolean;
-  icon?: string;
-  color?: string;
+  isCustom: boolean;
+  icon: string;
+  color: string;
 }
+
+export type AddCategory = {
+  name: string;
+  icon: string;
+  color: string;
+};
 
 export interface User {
   id: string;

@@ -26,10 +26,10 @@ const Login: React.FC = () => {
 
       if (res.status === 200) {
         const { access: accessToken, refresh: refreshToken, user } = res.data;
-        const { id, email, username, is_staff } = user;
+        const { id, email, username, is_staff, currency } = user;
         login(
           { accessToken, refreshToken },
-          { id, email, username, isStaff: is_staff }
+          { id, email, username, isStaff: is_staff, currency }
         );
         navigate("/", { replace: true });
       }
@@ -128,10 +128,17 @@ const Login: React.FC = () => {
             onClick={() => {
               // Create guest tokens to bypass authentication
               const guestTokens = {
-                accessToken: 'guest-token',
-                refreshToken: 'guest-refresh-token'
+                accessToken: "guest-token",
+                refreshToken: "guest-refresh-token",
               };
-              login(guestTokens);
+              login(guestTokens, {
+                email: "",
+                id: 0,
+                isStaff: false,
+                username: "guest_user",
+                currency: "USD",
+                name: "Guest User",
+              });
               navigate("/", { replace: true });
             }}
             disabled={loading}

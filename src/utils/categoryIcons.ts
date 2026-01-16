@@ -6,6 +6,7 @@ import {
   Film,
   Heart,
   Briefcase,
+  BookOpen,
   Gift,
   GraduationCap,
   Plane,
@@ -89,6 +90,7 @@ import {
   Frown,
   Meh,
   ThumbsUp,
+  Laptop,
 } from "lucide-react";
 
 export const categoryIcons = [
@@ -133,6 +135,7 @@ export const categoryIcons = [
 
   // Education & Learning
   { name: "graduation-cap", component: GraduationCap, label: "Education" },
+  { name: "book-open", component: BookOpen, label: "BookOpen" },
   { name: "book", component: Book, label: "Books" },
   { name: "school", component: School, label: "School" },
 
@@ -156,6 +159,7 @@ export const categoryIcons = [
   { name: "wifi", component: Wifi, label: "Internet" },
   { name: "printer", component: Printer, label: "Printer" },
   { name: "camera", component: Camera, label: "Camera" },
+  { name: "laptop", component: Laptop, label: "Laptop" },
 
   // Entertainment & Hobbies
   { name: "music", component: Music, label: "Music" },
@@ -219,3 +223,34 @@ export const categoryIcons = [
   { name: "meh", component: Meh, label: "Neutral" },
   { name: "thumbs-up", component: ThumbsUp, label: "Like" },
 ];
+
+// const defaultCategories = {
+//   Food: "utensils",
+//   Transport: "car",
+//   Tithe: "heart",
+//   Utilities: "zap",
+//   Shopping: "shopping-bag",
+//   Spotify: "music",
+//   Healthcare: "heart-pulse",
+//   Groceries: "shopping-cart",
+//   Salary: "briefcase",
+//   Freelance: "laptop",
+//   Investment: "trending-up",
+//   Gift: "gift",
+//   Housing: "home",
+//   Entertainment: "gamepad-2",
+//   Education: "book-open",
+//   Travel: "plane",
+//   Insurance: "shield",
+//   // default: "receipt",
+// };
+
+// Object.entries(defaultCategories).map(([k, v]) => {
+//   const category = {
+//     name: k,
+//     icon: v,
+//     color: getCategoryColor(k),
+//   };
+
+//   addCategory(category);
+// });

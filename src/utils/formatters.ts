@@ -28,7 +28,7 @@ export const formatCurrency = (
     BRL: "pt-BR",
   };
 
-  const locale = localeMap[currency] || "en-US";
+  const locale = "en-US";
 
   return new Intl.NumberFormat(locale, {
     style: "currency",

@@ -3,6 +3,11 @@ import { X, Search } from "lucide-react"; // Add Search icon
 import { Category } from "../../types";
 import { categoryIcons } from "../../utils/categoryIcons";
 import "./AddCategoryModal.css";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  addCategoryMutationOptions,
+  editCategoryMutationOptions,
+} from "../../queryOptions/categoriesMutationOptions";
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -19,10 +24,36 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 }) => {
   const [name, setName] = useState("");
   // type removed from UI; defaulting to expense for backward compatibility
-  const [type] = useState<"expense" | "income">("expense");
   const [color, setColor] = useState("#4361ee");
   const [icon, setIcon] = useState("beaker"); // Default to lab icon now
   const [searchTerm, setSearchTerm] = useState(""); // Add search state
+
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: addCategoryMutation,
+    isPending,
+    error,
+  } = useMutation({
+    ...addCategoryMutationOptions(),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+
+  const {
+    mutate: updateCategoryMutation,
+    isPending: updateCategoryIsPending,
+    error: updateCategoryError,
+  } = useMutation({
+    ...editCategoryMutationOptions(),
+    onSuccess: (_) => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+
+  const isMutationLoading = isPending || updateCategoryIsPending;
+  const mutationHasError = error !== null || updateCategoryError !== null;
 
   useEffect(() => {
     if (editingCategory) {
@@ -55,15 +86,16 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     e.preventDefault();
     if (!name.trim()) return;
 
-    const categoryData: Omit<Category, "id"> = {
-      name: name.trim(),
-      type,
-      color,
-      icon,
-      isCustom: true,
-    };
+    if (editingCategory) {
+      updateCategoryMutation({
+        categoryId: editingCategory.id.toString(),
+        fieldsToUpdate: { name: name.trim(), color, icon },
+      });
+      onClose();
+      return;
+    }
 
-    onSave(categoryData);
+    addCategoryMutation({ name: name.trim(), color, icon });
     onClose();
   };
 
@@ -92,6 +124,9 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     categoryIcons.find((i) => i.name === icon) || categoryIcons[0];
   const SelectedIcon = selectedIcon.component;
 
+  if (isMutationLoading) {
+  }
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -101,127 +136,137 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             <X size={20} />
           </button>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Category Name</label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Lab Supplies, Salary, Groceries"
-              required
-            />
+        {mutationHasError && (
+          <>
+            <p>There has been an error</p>
+          </>
+        )}
+        {isMutationLoading ? (
+          <div className="loader-2-container">
+            <div className="loader-2"></div>
           </div>
-
-          {/* Category Type selection removed from UI as requested */}
-
-          {/* Updated Icon Selection with Search */}
-          <div className="form-group">
-            <label>Icon Selection</label>
-
-            {/* Search Bar */}
-            <div className="icon-search">
-              <Search size={16} />
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="name">Category Name</label>
               <input
                 type="text"
-                placeholder="Search icons by name or label..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Lab Supplies, Salary, Groceries"
+                required
               />
-              {searchTerm && (
-                <button
-                  type="button"
-                  className="clear-search"
-                  onClick={() => setSearchTerm("")}
-                >
-                  Clear
-                </button>
-              )}
             </div>
 
-            {/* Icon Grid with Scroll */}
-            <div className="icon-grid-container">
-              <div className="icon-grid">
-                {filteredIcons.map((iconOption) => {
-                  const IconComponent = iconOption.component;
-                  return (
-                    <button
-                      key={iconOption.name}
-                      type="button"
-                      className={`icon-option ${
-                        icon === iconOption.name ? "selected" : ""
-                      }`}
-                      onClick={() => setIcon(iconOption.name)}
-                      title={`${iconOption.label} (${iconOption.name})`}
-                    >
-                      <IconComponent size={18} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Category Type selection removed from UI as requested */}
 
-            {/* Results Count */}
-            <div className="icon-results">
-              <span>
-                Showing {filteredIcons.length} of {categoryIcons.length} icons
-                {searchTerm && ` for "${searchTerm}"`}
-              </span>
-            </div>
+            {/* Updated Icon Selection with Search */}
+            <div className="form-group">
+              <label>Icon Selection</label>
 
-            {/* Icon Preview */}
-            <div className="selected-icon-preview">
-              <div
-                className="icon-preview-circle"
-                style={{ backgroundColor: color }}
-              >
-                <SelectedIcon size={20} color="white" />
-              </div>
-              <div className="icon-preview-info">
-                <strong>{selectedIcon.label}</strong>
-                <span>{selectedIcon.name}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Color</label>
-            <div className="color-grid">
-              {colorOptions.map((colorOption) => (
-                <button
-                  key={colorOption}
-                  type="button"
-                  className={`color-option ${
-                    color === colorOption ? "selected" : ""
-                  }`}
-                  style={{ backgroundColor: colorOption }}
-                  onClick={() => setColor(colorOption)}
-                  title={colorOption}
+              {/* Search Bar */}
+              <div className="icon-search">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Search icons by name or label..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
                 />
-              ))}
-            </div>
-            <div className="color-input">
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-              />
-              <span>Custom: {color}</span>
-            </div>
-          </div>
+                {searchTerm && (
+                  <button
+                    type="button"
+                    className="clear-search"
+                    onClick={() => setSearchTerm("")}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
 
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary">
-              {editingCategory ? "Update Category" : "Add Category"}
-            </button>
-          </div>
-        </form>
+              {/* Icon Grid with Scroll */}
+              <div className="icon-grid-container">
+                <div className="icon-grid">
+                  {filteredIcons.map((iconOption) => {
+                    const IconComponent = iconOption.component;
+                    return (
+                      <button
+                        key={iconOption.name}
+                        type="button"
+                        className={`icon-option ${
+                          icon === iconOption.name ? "selected" : ""
+                        }`}
+                        onClick={() => setIcon(iconOption.name)}
+                        title={`${iconOption.label} (${iconOption.name})`}
+                      >
+                        <IconComponent size={18} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Results Count */}
+              <div className="icon-results">
+                <span>
+                  Showing {filteredIcons.length} of {categoryIcons.length} icons
+                  {searchTerm && ` for "${searchTerm}"`}
+                </span>
+              </div>
+
+              {/* Icon Preview */}
+              <div className="selected-icon-preview">
+                <div
+                  className="icon-preview-circle"
+                  style={{ backgroundColor: color }}
+                >
+                  <SelectedIcon size={20} color="white" />
+                </div>
+                <div className="icon-preview-info">
+                  <strong>{selectedIcon.label}</strong>
+                  <span>{selectedIcon.name}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Color</label>
+              <div className="color-grid">
+                {colorOptions.map((colorOption) => (
+                  <button
+                    key={colorOption}
+                    type="button"
+                    className={`color-option ${
+                      color === colorOption ? "selected" : ""
+                    }`}
+                    style={{ backgroundColor: colorOption }}
+                    onClick={() => setColor(colorOption)}
+                    title={colorOption}
+                  />
+                ))}
+              </div>
+              <div className="color-input">
+                <input
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                />
+                <span>Custom: {color}</span>
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary">
+                {editingCategory ? "Update Category" : "Add Category"}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

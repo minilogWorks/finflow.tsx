@@ -18,6 +18,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  console.log({ category });
   const { user } = useAuth();
   const currency = user?.currency || "USD";
   const transactions = StorageService.getTransactions().filter(
